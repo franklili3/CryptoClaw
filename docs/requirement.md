@@ -2,7 +2,9 @@
 
 > 一键安装、本地运行的智能加密货币量化交易软件
 
-[English Version](requirement_en.md)
+[English Version](requirement_en.md) | [技术规范](technical-spec.md)
+
+> 📋 **说明**：本文档为产品需求文档，技术实现细节（代码、数据结构、API）请参考 [技术规范文档](technical-spec.md)
 
 ---
 
@@ -142,12 +144,7 @@
 │                                                             │
 │  4. 上传服务器                                              │
 │     ├─ 客户端生成同意记录                                   │
-│     │   {                                                   │
-│     │     "user_id": "xxx",                                 │
-│     │     "agreed_at": "2026-03-17T09:00:00Z",             │
-│     │     "rule_version": "v1.0",                          │
-│     │     "client_signature": "xxx"                        │
-│     │   }                                                   │
+│     │   详见 [技术规范 - 收费规则同意数据](technical-spec.md#21-收费规则同意数据) │
 │     ├─ 上传至服务器存档                                     │
 │     └─ 服务器返回确认                                       │
 │                                                             │
@@ -159,20 +156,7 @@
 
 **数据模型（服务端）：**
 
-```sql
--- 收费规则同意记录（服务端）
-CREATE TABLE fee_agreements (
-  id UUID PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  rule_version TEXT NOT NULL,
-  agreed_at TIMESTAMP NOT NULL,
-  client_ip TEXT,
-  client_signature TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  
-  UNIQUE(user_id, rule_version)
-);
-```
+详见 [技术规范 - 收费规则同意记录](technical-spec.md#11-收费规则同意记录服务端)
 
 ### 2.3 月度计费流程（新增）
 
@@ -196,15 +180,7 @@ CREATE TABLE fee_agreements (
 │     └─ 更新高水位                                           │
 │                                                             │
 │  3. 生成账单（本地）                                        │
-│     {                                                       │
-│       "month": "2026-02",                                   │
-│       "cumulative_profit": 1250.00,                         │
-│       "high_watermark": 1000.00,                            │
-│       "billable_profit": 250.00,                            │
-│       "fee_amount": 25.00,                                  │
-│       "trades": [...],                                      │
-│       "generated_at": "2026-03-01T00:00:00Z"               │
-│     }                                                       │
+│     详见 [技术规范 - 月度账单数据](technical-spec.md#22-月度账单数据) │
 │                                                             │
 │  4. 用户确认                                                │
 │     ├─ 客户端展示账单详情                                   │
@@ -229,21 +205,7 @@ CREATE TABLE fee_agreements (
 
 **账单上传数据结构：**
 
-```json
-{
-  "bill_id": "bill_xxx",
-  "user_id": "user_xxx",
-  "month": "2026-02",
-  "cumulative_profit": 1250.00,
-  "high_watermark": 1000.00,
-  "billable_profit": 250.00,
-  "fee_amount": 25.00,
-  "currency": "USDT",
-  "confirmed_at": "2026-03-01T10:30:00Z",
-  "client_signature": "hmac_sha256_signature",
-  "trade_count": 45
-}
-```
+详见 [技术规范 - 账单上传数据结构](technical-spec.md#23-账单上传数据结构)
 
 ### 2.4 支付与核对流程（新增）
 
@@ -301,39 +263,7 @@ CREATE TABLE fee_agreements (
 
 **服务端数据模型：**
 
-```sql
--- 支付订单（服务端）
-CREATE TABLE payment_orders (
-  id UUID PRIMARY KEY,
-  bill_id TEXT NOT NULL,
-  user_id TEXT NOT NULL,
-  amount DECIMAL(20, 8) NOT NULL,
-  currency TEXT NOT NULL,
-  chain TEXT NOT NULL,
-  payment_address TEXT NOT NULL,
-  status TEXT DEFAULT 'pending',  -- pending, paid, overdue, cancelled
-  created_at TIMESTAMP DEFAULT NOW(),
-  expires_at TIMESTAMP,
-  
-  UNIQUE(bill_id)
-);
-
--- 支付记录（服务端）
-CREATE TABLE payments (
-  id UUID PRIMARY KEY,
-  order_id TEXT NOT NULL,
-  tx_hash TEXT NOT NULL,
-  amount DECIMAL(20, 8) NOT NULL,
-  currency TEXT NOT NULL,
-  chain TEXT NOT NULL,
-  confirmations INTEGER DEFAULT 0,
-  status TEXT DEFAULT 'pending',  -- pending, confirmed, failed
-  detected_at TIMESTAMP,
-  confirmed_at TIMESTAMP,
-  
-  UNIQUE(tx_hash)
-);
-```
+详见 [技术规范 - 支付订单与支付记录](technical-spec.md#12-支付订单服务端)
 
 ### 2.5 支付方式
 
@@ -720,35 +650,7 @@ CREATE TABLE payments (
 
 ##### 风控规则配置示例
 
-```json
-{
-  "risk_control": {
-    "account": {
-      "max_position_value": 10000,
-      "max_daily_loss_percent": 5,
-      "max_daily_trades": 20,
-      "max_open_trades": 5
-    },
-    "trade": {
-      "default_stoploss": -0.05,
-      "default_take_profit": 0.10,
-      "max_position_time_hours": 24,
-      "single_trade_max_stake": 500
-    },
-    "market": {
-      "volatility_threshold": 0.1,
-      "min_volume_24h": 1000000,
-      "blacklist": ["DOGE", "SHIB", "PEPE"]
-    },
-    "alerts": {
-      "channels": ["email", "push", "telegram"],
-      "risk_trigger": true,
-      "large_loss": 100,
-      "api_error": true
-    }
-  }
-}
-```
+详见 [技术规范 - 风控规则配置](technical-spec.md#24-风控规则配置)
 
 #### C. 比特币以太坊量化策略
 

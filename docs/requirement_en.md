@@ -2,7 +2,9 @@
 
 > One-click install, locally-running AI-powered crypto quantitative trading software
 
-[中文版 (Chinese Version)](requirement.md)
+[中文版](requirement.md) | [Technical Spec](technical-spec.md)
+
+> 📋 **Note**: This is the product requirements document. For technical implementation details (code, data structures, APIs), please refer to the [Technical Specification](technical-spec.md)
 
 ---
 
