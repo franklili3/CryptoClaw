@@ -1,2 +1,103 @@
-# CryptoClaw
-CryptoClaw - AI-powered crypto quant trading assistant. Write strategies in natural language, trade via Telegram/WhatsApp chat. Free to use, pay 10% only on profit. Local-first architecture, your API keys never leave your device. Built with OpenClaw + Freqtrade.
+# CryptoClaw 🦞
+
+> Your AI quant trading team, right in your chat.
+
+**CryptoClaw** is an AI-powered cryptocurrency quantitative trading assistant that lets you write trading strategies in natural language and execute everything through Telegram or WhatsApp conversations.
+
+## ✨ Features
+
+- 🗣️ **Natural Language Strategies** - No coding required, just describe your strategy
+- 📱 **Chat-First Interface** - Everything via Telegram/WhatsApp
+- 📊 **One-Click Backtesting** - AI explains results in plain language
+- 💰 **Pay Only on Profit** - Free to use, 10% fee only when you profit
+- 🔐 **Local-First Privacy** - API keys encrypted locally, never uploaded
+- 📈 **Built-in Strategies** - BTC/ETH mean reversion strategies included
+
+## 🚀 Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/franklili3/cryptoclaw.git
+
+# Install dependencies
+cd cryptoclaw
+npm install
+
+# Start the application
+npm start
+```
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐     ┌─────────────────┐
+│  Telegram/      │     │  Desktop Client │
+│  WhatsApp Bot   │     │  (Electron)     │
+│  (Chat UI)      │     │  (API Keys)     │
+└────────┬────────┘     └────────┬────────┘
+         │                       │
+         └───────────┬───────────┘
+                     │
+         ┌───────────┴───────────┐
+         │      OpenClaw         │
+         │   (AI Agent)          │
+         └───────────┬───────────┘
+                     │
+         ┌───────────┴───────────┐
+         │     Freqtrade         │
+         │   (Quant Engine)      │
+         └───────────────────────┘
+```
+
+## 💼 Business Model
+
+- ✅ **Free to use** - No subscription, no upfront cost
+- ✅ **Pay only on profit** - 10% of profits, high watermark mechanism
+- ✅ **No profit, no fee** - Losses and recovery periods are not charged
+
+## 🔒 Privacy & Security
+
+- 🔐 API keys stored locally with AES-256 encryption
+- 🔐 Trading data never leaves your device
+- 🔐 No cloud storage of sensitive information
+
+## 🛠️ Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| AI Agent | OpenClaw |
+| Quant Engine | Freqtrade |
+| Desktop | Electron |
+| Cloud | Supabase |
+| Messaging | Telegram Bot API |
+
+## 📋 Roadmap
+
+- [x] Requirements & Architecture Design
+- [ ] MVP: Backtesting + Paper Trading
+- [ ] Live Trading Integration
+- [ ] Payment System
+- [ ] More Strategies
+
+## ⚠️ Disclaimer
+
+This is a tool, not financial advice. Cryptocurrency trading carries significant risk. Past performance does not guarantee future results. Always do your own research.
+
+## 📄 License
+
+MIT License
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📞 Contact
+
+- X (Twitter): [@cryptoclaw88](https://x.com/cryptoclaw88)
+- GitHub: [franklili3/cryptoclaw](https://github.com/franklili3/cryptoclaw)
+
+---
+
+# Build in Public 🚀
+
+Follow the development journey on X: #BuildInPublic #CryptoClaw
