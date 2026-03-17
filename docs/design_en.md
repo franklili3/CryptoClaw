@@ -1,25 +1,25 @@
-# CryptoClaw - 设计文档
+# CryptoClaw - Design Document
 
-> 基于 OpenClaw + Freqtrade 的 AI 量化交易系统
+> AI Quantitative Trading System based on OpenClaw + Freqtrade
 
-[English Version](design_en.md) | [产品需求](requirement.md) | [技术规范](technical-spec.md)
+[中文版](design.md) | [Product Requirements](requirement.md) | [Technical Spec](technical-spec.md)
 
 ---
 
-## 一、系统架构概览
+## 1. System Architecture Overview
 
-### 1.1 整体架构
+### 1.1 Overall Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CryptoClaw 系统                                 │
+│                              CryptoClaw System                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                        用户交互层 (Channels)                         │   │
+│  │                     User Interaction Layer (Channels)                │   │
 │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────────┐  │   │
 │  │  │  Telegram   │  │  WhatsApp   │  │     Desktop Client (Electron)│  │   │
-│  │  │   (对话)    │  │   (对话)    │  │     (敏感信息管理)           │  │   │
+│  │  │  (Chat)     │  │  (Chat)     │  │     (Sensitive Info Mgmt)    │  │   │
 │  │  └──────┬──────┘  └──────┬──────┘  └─────────────┬───────────────┘  │   │
 │  │         │                │                       │                   │   │
 │  └─────────┼────────────────┼───────────────────────┼───────────────────┘   │
@@ -33,19 +33,19 @@
 │  │  │                      Agent Runtime (Agent)                       ││   │
 │  │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  ││   │
 │  │  │  │   SOUL.md   │  │  AGENTS.md  │  │     USER.md / TOOLS.md  │  ││   │
-│  │  │  │  (人格定义) │  │  (行为规范) │  │     (用户配置/工具说明) │  ││   │
+│  │  │  │  (Persona)  │  │  (Behavior) │  │   (User Config/Tools)   │  ││   │
 │  │  │  └─────────────┘  └─────────────┘  └─────────────────────────┘  ││   │
 │  │  │                                                                  ││   │
 │  │  │  ┌─────────────────────────────────────────────────────────────┐││   │
-│  │  │  │                     Skills (技能层)                          │││   │
+│  │  │  │                     Skills Layer                            │││   │
 │  │  │  │  ┌────────────┐ ┌────────────┐ ┌────────────────────────┐   │││   │
 │  │  │  │  │ freqtrade  │ │  billing   │ │     trading-signals    │   │││   │
-│  │  │  │  │  (量化)    │ │  (计费)    │ │     (交易信号)         │   │││   │
+│  │  │  │  │(Quant)     │ │ (Billing)  │ │   (Trading Signals)    │   │││   │
 │  │  │  │  └────────────┘ └────────────┘ └────────────────────────┘   │││   │
 │  │  │  └─────────────────────────────────────────────────────────────┘││   │
 │  │  │                                                                  ││   │
 │  │  │  ┌─────────────────────────────────────────────────────────────┐││   │
-│  │  │  │                     Tools (工具层)                           │││   │
+│  │  │  │                     Tools Layer                             │││   │
 │  │  │  │  exec │ read │ write │ edit │ browser │ canvas │ nodes │   │││   │
 │  │  │  └─────────────────────────────────────────────────────────────┘││   │
 │  │  └─────────────────────────────────────────────────────────────────┘│   │
@@ -53,87 +53,87 @@
 │                             │                                               │
 │                             ▼                                               │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                        本地存储层 (Local Storage)                     │   │
+│  │                     Local Storage Layer                              │   │
 │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────────┐  │   │
 │  │  │   SQLite    │  │  Encrypted  │  │      Freqtrade Data         │  │   │
-│  │  │  (交易记录) │  │  Keys (AES) │  │      (策略/回测)            │  │   │
+│  │  │  (Trades)   │  │  Keys (AES) │  │    (Strategies/Backtest)    │  │   │
 │  │  └─────────────┘  └─────────────┘  └─────────────────────────────┘  │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 1.2 OpenClaw 体系结构映射
+### 1.2 OpenClaw Architecture Mapping
 
-OpenClaw 的核心体系结构是 **Soul → Agent → Skill → Tool → Script**：
+OpenClaw's core architecture is **Soul → Agent → Skill → Tool → Script**:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        OpenClaw 五层架构                                     │
+│                        OpenClaw Five-Layer Architecture                      │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  Layer 1: SOUL (灵魂)                                                       │
-│  ├─ SOUL.md - 定义 Agent 的人格、边界、语调                                 │
-│  ├─ "我是谁？我为什么存在？"                                                 │
-│  └─ CryptoClaw: "我是你的 AI 量化交易助手"                                  │
+│  Layer 1: SOUL                                                              │
+│  ├─ SOUL.md - Defines Agent's persona, boundaries, tone                    │
+│  ├─ "Who am I? Why do I exist?"                                            │
+│  └─ CryptoClaw: "I am your AI quantitative trading assistant"              │
 │                                                                             │
-│  Layer 2: AGENT (代理)                                                      │
-│  ├─ AGENTS.md - 运行时行为规范、内存、规则                                  │
-│  ├─ 工作区 (Workspace) - 唯一的工作目录                                     │
-│  ├─ 会话存储 (Sessions) - ~/.openclaw/agents/<agentId>/sessions             │
-│  └─ 启动文件注入: SOUL.md, AGENTS.md, USER.md, TOOLS.md, MEMORY.md          │
+│  Layer 2: AGENT                                                             │
+│  ├─ AGENTS.md - Runtime behavior rules, memory, rules                      │
+│  ├─ Workspace - Single working directory                                   │
+│  ├─ Sessions - ~/.openclaw/agents/<agentId>/sessions                       │
+│  └─ Startup file injection: SOUL.md, AGENTS.md, USER.md, TOOLS.md, MEMORY.md│
 │                                                                             │
-│  Layer 3: SKILL (技能)                                                      │
-│  ├─ 独立的功能模块，通过 SKILL.md 定义                                      │
-│  ├─ 加载位置:                                                               │
-│  │   ├─ Bundled (内置): /usr/lib/node_modules/openclaw/skills/             │
+│  Layer 3: SKILL                                                             │
+│  ├─ Independent functional modules defined via SKILL.md                    │
+│  ├─ Load locations:                                                         │
+│  │   ├─ Bundled: /usr/lib/node_modules/openclaw/skills/                    │
 │  │   ├─ Managed: ~/.openclaw/skills/                                        │
 │  │   └─ Workspace: <workspace>/skills/                                      │
-│  └─ CryptoClaw 技能:                                                        │
-│      ├─ freqtrade - Freqtrade 集成                                         │
-│      ├─ billing - 计费系统                                                  │
-│      └─ trading-signals - 交易信号                                          │
+│  └─ CryptoClaw Skills:                                                      │
+│      ├─ freqtrade - Freqtrade integration                                  │
+│      ├─ billing - Billing system                                           │
+│      └─ trading-signals - Trading signals                                  │
 │                                                                             │
-│  Layer 4: TOOL (工具)                                                       │
-│  ├─ 内置工具 (始终可用):                                                    │
-│  │   ├─ read - 读取文件                                                     │
-│  │   ├─ write - 写入文件                                                    │
-│  │   ├─ edit - 编辑文件                                                     │
-│  │   ├─ exec - 执行命令                                                     │
-│  │   └─ process - 进程管理                                                  │
-│  ├─ 扩展工具:                                                               │
-│  │   ├─ browser - 浏览器控制                                                │
-│  │   ├─ canvas - UI 渲染                                                    │
-│  │   ├─ nodes - 设备控制                                                    │
-│  │   └─ cron - 定时任务                                                     │
-│  └─ 工具策略: agents.list[].tools.allow / deny                              │
+│  Layer 4: TOOL                                                              │
+│  ├─ Built-in Tools (always available):                                     │
+│  │   ├─ read - Read files                                                  │
+│  │   ├─ write - Write files                                                │
+│  │   ├─ edit - Edit files                                                  │
+│  │   ├─ exec - Execute commands                                            │
+│  │   └─ process - Process management                                       │
+│  ├─ Extended Tools:                                                         │
+│  │   ├─ browser - Browser control                                          │
+│  │   ├─ canvas - UI rendering                                              │
+│  │   ├─ nodes - Device control                                             │
+│  │   └─ cron - Scheduled tasks                                             │
+│  └─ Tool Policy: agents.list[].tools.allow / deny                          │
 │                                                                             │
-│  Layer 5: SCRIPT (脚本)                                                     │
-│  ├─ 通过 exec 工具执行的外部命令                                            │
+│  Layer 5: SCRIPT                                                            │
+│  ├─ External commands executed via exec tool                                │
 │  ├─ Freqtrade CLI: freqtrade backtesting, trade, etc.                      │
-│  ├─ Python 脚本: 策略生成、数据分析                                         │
-│  └─ Shell 脚本: 系统操作                                                    │
+│  ├─ Python Scripts: Strategy generation, data analysis                      │
+│  └─ Shell Scripts: System operations                                        │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 二、核心组件设计
+## 2. Core Component Design
 
-### 2.1 OpenClaw Gateway (网关)
+### 2.1 OpenClaw Gateway
 
-**职责：**
-- 维护消息渠道连接 (Telegram/WhatsApp)
-- 暴露 WebSocket API 供客户端连接
-- 路由消息到正确的 Agent
-- 管理会话和状态
+**Responsibilities:**
+- Maintain message channel connections (Telegram/WhatsApp)
+- Expose WebSocket API for client connections
+- Route messages to correct Agent
+- Manage sessions and state
 
-**配置示例：**
+**Configuration Example:**
 
 ```json5
 {
-  // Agent 定义
+  // Agent definition
   agents: {
     list: [
       {
@@ -146,13 +146,13 @@ OpenClaw 的核心体系结构是 **Soul → Agent → Skill → Tool → Script
     ],
   },
 
-  // 消息渠道绑定
+  // Message channel bindings
   bindings: [
     { agentId: "cryptoclaw", match: { channel: "telegram" } },
     { agentId: "cryptoclaw", match: { channel: "whatsapp" } },
   ],
 
-  // 渠道配置
+  // Channel configuration
   channels: {
     telegram: {
       accounts: {
@@ -174,55 +174,55 @@ OpenClaw 的核心体系结构是 **Soul → Agent → Skill → Tool → Script
 }
 ```
 
-### 2.2 Agent Workspace (工作区)
+### 2.2 Agent Workspace
 
-**目录结构：**
+**Directory Structure:**
 
 ```
 ~/.cryptoclaw/
-├── workspace/                    # Agent 工作区
-│   ├── AGENTS.md                 # 运行时行为规范
-│   ├── SOUL.md                   # 人格定义
-│   ├── USER.md                   # 用户配置
-│   ├── TOOLS.md                  # 工具说明
-│   ├── MEMORY.md                 # 长期记忆
-│   ├── memory/                   # 每日记忆
+├── workspace/                    # Agent workspace
+│   ├── AGENTS.md                 # Runtime behavior rules
+│   ├── SOUL.md                   # Persona definition
+│   ├── USER.md                   # User configuration
+│   ├── TOOLS.md                  # Tool documentation
+│   ├── MEMORY.md                 # Long-term memory
+│   ├── memory/                   # Daily memory
 │   │   └── 2026-03-17.md
-│   ├── skills/                   # 自定义技能
+│   ├── skills/                   # Custom skills
 │   │   ├── freqtrade/
 │   │   │   └── SKILL.md
 │   │   ├── billing/
 │   │   │   └── SKILL.md
 │   │   └── trading-signals/
 │   │       └── SKILL.md
-│   └── strategies/               # Freqtrade 策略
+│   └── strategies/               # Freqtrade strategies
 │       └── user_strategies/
 │           └── rsi_strategy.py
-├── data/                         # 本地数据
-│   ├── freqtrade.db              # 交易数据库
-│   ├── keys.db                   # 加密密钥存储
-│   └── trades/                   # 交易记录
-└── config/                       # 配置文件
-    ├── freqtrade.json            # Freqtrade 配置
-    └── keys.json                 # API Key 配置（加密）
+├── data/                         # Local data
+│   ├── freqtrade.db              # Trading database
+│   ├── keys.db                   # Encrypted key storage
+│   └── trades/                   # Trade records
+└── config/                       # Configuration files
+    ├── freqtrade.json            # Freqtrade config
+    └── keys.json                 # API Key config (encrypted)
 ```
 
-### 2.3 Skills (技能) 设计
+### 2.3 Skills Design
 
-#### 2.3.1 freqtrade 技能
+#### 2.3.1 freqtrade Skill
 
-**职责：**
-- 与 Freqtrade CLI 交互
-- 生成策略代码
-- 执行回测
-- 启动/停止交易
+**Responsibilities:**
+- Interact with Freqtrade CLI
+- Generate strategy code
+- Execute backtesting
+- Start/stop trading
 
-**SKILL.md 结构：**
+**SKILL.md Structure:**
 
 ```markdown
 ---
 name: freqtrade
-description: "Freqtrade 量化交易集成。用于：策略生成、回测、模拟交易、实盘交易。"
+description: "Freqtrade quantitative trading integration. Use for: strategy generation, backtesting, paper trading, live trading."
 metadata:
   openclaw:
     emoji: "📊"
@@ -232,161 +232,161 @@ metadata:
 
 # Freqtrade Skill
 
-## 功能
+## Features
 
-### 策略生成
-- 将自然语言描述转换为 Freqtrade 策略代码
-- 支持常见指标：RSI, MACD, Bollinger, EMA, etc.
+### Strategy Generation
+- Convert natural language descriptions to Freqtrade strategy code
+- Support common indicators: RSI, MACD, Bollinger, EMA, etc.
 
-### 回测
-- 执行历史数据回测
-- 返回收益曲线、最大回撤等指标
+### Backtesting
+- Execute historical data backtesting
+- Return metrics like profit curve, max drawdown, etc.
 
-### 交易
-- 模拟交易 (Dry-Run)
-- 实盘交易
+### Trading
+- Paper Trading (Dry-Run)
+- Live Trading
 
-## 命令
+## Commands
 
 \`\`\`bash
-# 下载历史数据
+# Download historical data
 freqtrade download-data --pairs BTC/USDT --timeframe 1h
 
-# 执行回测
+# Execute backtesting
 freqtrade backtesting --strategy RSI --timerange 20240101-20241231
 
-# 启动模拟交易
+# Start paper trading
 freqtrade trade --strategy RSI --dry-run
 
-# 启动实盘交易
+# Start live trading
 freqtrade trade --strategy RSI
 \`\`\`
 ```
 
-#### 2.3.2 billing 技能
+#### 2.3.2 billing Skill
 
-**职责：**
-- 计算高水位
-- 生成月度账单
-- 上传账单确认
-- 生成支付二维码
+**Responsibilities:**
+- Calculate high-water mark
+- Generate monthly bills
+- Upload bill confirmations
+- Generate payment QR codes
 
-#### 2.3.3 trading-signals 技能
+#### 2.3.3 trading-signals Skill
 
-**职责：**
-- 下载每日交易信号（从 Supabase）
-- 推送信号通知到用户
+**Responsibilities:**
+- Download daily trading signals (from Supabase)
+- Push signal notifications to users
 
 ---
 
-## 三、数据流设计
+## 3. Data Flow Design
 
-### 3.1 用户对话流程
+### 3.1 User Conversation Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           用户对话流程                                       │
+│                         User Conversation Flow                               │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  用户: "帮我写一个 RSI 策略，当 RSI < 30 买入，RSI > 70 卖出"               │
+│  User: "Help me write an RSI strategy, buy when RSI < 30, sell when RSI > 70"│
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │ 1. Telegram/WhatsApp 接收消息                                        │   │
+│  │ 1. Telegram/WhatsApp receives message                                │   │
 │  └────────────────────────────┬────────────────────────────────────────┘   │
 │                               │                                             │
 │                               ▼                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │ 2. OpenClaw Gateway 路由到 cryptoclaw Agent                         │   │
+│  │ 2. OpenClaw Gateway routes to cryptoclaw Agent                      │   │
 │  └────────────────────────────┬────────────────────────────────────────┘   │
 │                               │                                             │
 │                               ▼                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │ 3. Agent Runtime 处理                                                │   │
-│  │    ├─ 读取 SOUL.md/AGENTS.md/USER.md                                 │   │
-│  │    ├─ 理解用户意图：生成 RSI 策略                                    │   │
-│  │    └─ 决定调用 freqtrade skill                                       │   │
+│  │ 3. Agent Runtime processes                                           │   │
+│  │    ├─ Read SOUL.md/AGENTS.md/USER.md                                 │   │
+│  │    ├─ Understand user intent: Generate RSI strategy                  │   │
+│  │    └─ Decide to call freqtrade skill                                 │   │
 │  └────────────────────────────┬────────────────────────────────────────┘   │
 │                               │                                             │
 │                               ▼                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │ 4. freqtrade Skill 执行                                              │   │
-│  │    ├─ 生成策略代码 (Python)                                          │   │
-│  │    ├─ 保存到 workspace/strategies/user_strategies/rsi_strategy.py   │   │
-│  │    └─ 返回策略信息给 Agent                                           │   │
+│  │ 4. freqtrade Skill executes                                          │   │
+│  │    ├─ Generate strategy code (Python)                                │   │
+│  │    ├─ Save to workspace/strategies/user_strategies/rsi_strategy.py   │   │
+│  │    └─ Return strategy info to Agent                                  │   │
 │  └────────────────────────────┬────────────────────────────────────────┘   │
 │                               │                                             │
 │                               ▼                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │ 5. Agent 生成回复                                                    │   │
-│  │    "已为你生成 RSI 策略！策略文件：rsi_strategy.py                   │   │
-│  │     买入条件：RSI < 30                                               │   │
-│  │     卖出条件：RSI > 70                                               │   │
-│  │     要不要先回测一下？"                                              │   │
+│  │ 5. Agent generates response                                          │   │
+│  │    "RSI strategy generated! File: rsi_strategy.py                    │   │
+│  │     Buy condition: RSI < 30                                          │   │
+│  │     Sell condition: RSI > 70                                         │   │
+│  │     Want to run a backtest first?"                                   │   │
 │  └────────────────────────────┬────────────────────────────────────────┘   │
 │                               │                                             │
 │                               ▼                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │ 6. Telegram/WhatsApp 发送回复给用户                                  │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
+│  │ 6. Telegram/WhatsApp sends response to user                          │   │
+│  └────────────────────────────┬────────────────────────────────────────┘   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 回测流程
+### 3.2 Backtesting Flow
 
 ```
-用户: "用 BTC 最近一年的数据回测一下"
+User: "Backtest with BTC data from the last year"
 
-1. Agent 调用 freqtrade skill
-2. Skill 执行:
+1. Agent calls freqtrade skill
+2. Skill executes:
    a. freqtrade download-data --pairs BTC/USDT --timeframe 1h --days 365
    b. freqtrade backtesting --strategy RSI --timerange 20240101-20241231
-3. 解析回测结果
-4. Agent 生成自然语言解释:
-   "回测完成！
-    📊 总收益: +45.2%
-    📉 最大回撤: -12.3%
-    📈 胜率: 62%
-    💰 交易次数: 156
+3. Parse backtesting results
+4. Agent generates natural language explanation:
+   "Backtesting complete!
+    📊 Total Return: +45.2%
+    📉 Max Drawdown: -12.3%
+    📈 Win Rate: 62%
+    💰 Trade Count: 156
     
-    要不要开启模拟交易试试？"
+    Want to start paper trading?"
 ```
 
-### 3.3 实盘交易流程
+### 3.3 Live Trading Flow
 
 ```
-用户: "开启实盘交易"
+User: "Start live trading"
 
-1. 检查是否已同意收费规则
-   - 如果未同意，展示规则，请求用户确认
-   - 用户确认后上传服务器存档
+1. Check if billing rules accepted
+   - If not, display rules, request user confirmation
+   - After confirmation, upload to server for archival
 
-2. 检查是否已配置交易所 API
-   - 如果未配置，引导用户在桌面客户端配置
+2. Check if exchange API configured
+   - If not, guide user to configure in desktop client
 
-3. 启动实盘交易
+3. Start live trading
    - freqtrade trade --strategy RSI
 
-4. 持续推送交易通知到用户
-   - "买入 BTC/USDT @ $45,000"
-   - "卖出 BTC/USDT @ $46,500 (+3.3%)"
+4. Continuously push trade notifications to user
+   - "Buy BTC/USDT @ $45,000"
+   - "Sell BTC/USDT @ $46,500 (+3.3%)"
 ```
 
 ---
 
-## 四、安全设计
+## 4. Security Design
 
-### 4.1 敏感信息管理
+### 4.1 Sensitive Information Management
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        敏感信息管理架构                                      │
+│                  Sensitive Information Management Architecture               │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                     桌面客户端 (Electron)                            │   │
+│  │                   Desktop Client (Electron)                          │   │
 │  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │                    本地加密存储                               │   │   │
+│  │  │                  Local Encrypted Storage                      │   │   │
 │  │  │  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐ │   │   │
 │  │  │  │  LLM API Key   │  │ Exchange API   │  │  Supabase Key  │ │   │   │
 │  │  │  │  (AES-256)     │  │  Key (AES-256) │  │  (AES-256)     │ │   │   │
@@ -394,58 +394,58 @@ freqtrade trade --strategy RSI
 │  │  └─────────────────────────────────────────────────────────────┘   │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
-│  原则：                                                                     │
-│  ✅ 所有敏感信息存储在桌面客户端本地                                        │
-│  ✅ 使用 AES-256-GCM 加密                                                  │
-│  ✅ 密钥由用户主密码派生 (PBKDF2)                                           │
-│  ❌ 敏感信息永不上传到云端                                                  │
-│  ❌ Web/移动端不存储任何敏感信息                                            │
+│  Principles:                                                                │
+│  ✅ All sensitive information stored locally in desktop client             │
+│  ✅ Encrypted with AES-256-GCM                                              │
+│  ✅ Keys derived from user master password (PBKDF2)                        │
+│  ❌ Sensitive information never uploaded to cloud                           │
+│  ❌ Web/Mobile clients store no sensitive information                      │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 4.2 密钥层级
+### 4.2 Key Hierarchy
 
 ```
-Level 0: Master Key (主密钥)
-├─ 由用户密码派生 (PBKDF2, 100,000 iterations)
-├─ 不存储，每次从密码重新派生
-└─ 用于加密 Level 1 密钥
+Level 0: Master Key
+├─ Derived from user password (PBKDF2, 100,000 iterations)
+├─ Not stored, re-derived from password each time
+└─ Used to encrypt Level 1 keys
 
 Level 1: Data Encryption Key (DEK)
-├─ 每个用户唯一
-├─ 存储时由 Master Key 加密
-└─ 用于加密实际数据
+├─ Unique per user
+├─ Stored encrypted by Master Key
+└─ Used to encrypt actual data
 
-Level 1.5: Supabase Key (服务密钥)
-├─ 由服务器在用户注册时签发
-├─ 用于：
-│   ├─ 下载每日交易信号
-│   ├─ 上传收费规则同意记录
-│   └─ 上传账单确认数据
-├─ 存储在客户端本地（加密）
-├─ 逾期时服务器禁用此 Key
-└─ 支付后服务器启用此 Key
+Level 1.5: Supabase Key (Service Key)
+├─ Issued by server upon user registration
+├─ Used for:
+│   ├─ Downloading daily trading signals
+│   ├─ Uploading billing rule acceptance records
+│   └─ Uploading bill confirmation data
+├─ Stored locally on client (encrypted)
+├─ Server disables this key when overdue
+└─ Server enables this key after payment
 
-Level 2: Communication Keys (通信密钥)
-├─ HMAC Key: 请求签名
-├─ Session Key: JWT 签名
-└─ 定期轮换
+Level 2: Communication Keys
+├─ HMAC Key: Request signing
+├─ Session Key: JWT signing
+└─ Periodically rotated
 ```
 
 ---
 
-## 五、部署架构
+## 5. Deployment Architecture
 
-### 5.1 单机部署（推荐）
+### 5.1 Single-Machine Deployment (Recommended)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                          单机部署架构                                        │
+│                      Single-Machine Deployment Architecture                  │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                        用户机器 (Linux/macOS)                        │   │
+│  │                      User Machine (Linux/macOS)                      │   │
 │  │                                                                      │   │
 │  │  ┌───────────────────────────────────────────────────────────────┐  │   │
 │  │  │                    OpenClaw Gateway (Daemon)                   │  │   │
@@ -457,88 +457,88 @@ Level 2: Communication Keys (通信密钥)
 │  │  │                                                                │  │   │
 │  │  │  ┌─────────────────────────────────────────────────────────┐  │  │   │
 │  │  │  │                   Freqtrade Engine                       │  │  │   │
-│  │  │  │  - 策略执行                                              │  │  │   │
-│  │  │  │  - 数据下载                                              │  │  │   │
-│  │  │  │  - 回测计算                                              │  │  │   │
-│  │  │  │  - 交易执行                                              │  │  │   │
+│  │  │  │  - Strategy execution                                    │  │  │   │
+│  │  │  │  - Data download                                         │  │  │   │
+│  │  │  │  - Backtesting calculation                               │  │  │   │
+│  │  │  │  - Trade execution                                       │  │  │   │
 │  │  │  └─────────────────────────────────────────────────────────┘  │  │   │
 │  │  └───────────────────────────────────────────────────────────────┘  │   │
 │  │                                                                      │   │
 │  │  ┌───────────────────────────────────────────────────────────────┐  │   │
 │  │  │                     Desktop Client (Electron)                  │  │   │
-│  │  │  - API Key 管理                                                │  │   │
-│  │  │  - 本地设置                                                    │  │   │
-│  │  │  - 软件更新                                                    │  │   │
+│  │  │  - API Key management                                         │  │   │
+│  │  │  - Local settings                                             │  │   │
+│  │  │  - Software updates                                           │  │   │
 │  │  └───────────────────────────────────────────────────────────────┘  │   │
 │  │                                                                      │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
-│  云端（极简）：                                                             │
+│  Cloud (Minimal):                                                           │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
 │  │  Supabase                                                           │   │
-│  │  - 用户注册                                                         │   │
-│  │  - Supabase Key 管理                                                │   │
-│  │  - 交易信号存储                                                     │   │
-│  │  - 账单确认记录                                                     │   │
+│  │  - User registration                                                │   │
+│  │  - Supabase Key management                                          │   │
+│  │  - Trading signal storage                                           │   │
+│  │  - Bill confirmation records                                        │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 5.2 技术栈总结
+### 5.2 Technology Stack Summary
 
-| 层级 | 技术 | 说明 |
-|------|------|------|
-| **消息渠道** | Telegram Bot API / WhatsApp (Baileys) | 对话式交互 |
-| **AI Agent** | OpenClaw | 多模型支持、技能系统 |
-| **量化引擎** | Freqtrade | 策略执行、回测、交易 |
-| **桌面客户端** | Electron | 跨平台、敏感信息管理 |
-| **本地存储** | SQLite + AES-256 | 加密数据存储 |
-| **云服务** | Supabase | 用户注册、Key 管理 |
-| **LLM** | OpenAI / Claude / 本地模型 | 自然语言理解 |
+| Layer | Technology | Description |
+|-------|-----------|-------------|
+| **Message Channels** | Telegram Bot API / WhatsApp (Baileys) | Conversational interaction |
+| **AI Agent** | OpenClaw | Multi-model support, skill system |
+| **Quant Engine** | Freqtrade | Strategy execution, backtesting, trading |
+| **Desktop Client** | Electron | Cross-platform, sensitive info management |
+| **Local Storage** | SQLite + AES-256 | Encrypted data storage |
+| **Cloud Service** | Supabase | User registration, key management |
+| **LLM** | OpenAI / Claude / Local Models | Natural language understanding |
 
 ---
 
-## 六、开发计划
+## 6. Development Plan
 
 ### Phase 1: MVP (Week 1-4)
 
-- [ ] 搭建 OpenClaw Gateway + Agent
-- [ ] 实现 freqtrade skill（策略生成、回测）
-- [ ] Telegram Bot 集成
-- [ ] 基础对话功能
+- [ ] Set up OpenClaw Gateway + Agent
+- [ ] Implement freqtrade skill (strategy generation, backtesting)
+- [ ] Telegram Bot integration
+- [ ] Basic conversation functionality
 
 ### Phase 2: Trading (Week 5-7)
 
-- [ ] Freqtrade 交易集成
-- [ ] 模拟交易
-- [ ] 实盘交易
-- [ ] 交易通知
+- [ ] Freqtrade trading integration
+- [ ] Paper trading
+- [ ] Live trading
+- [ ] Trade notifications
 
 ### Phase 3: Payment (Week 8-9)
 
-- [ ] 收费规则同意流程
-- [ ] 月度计费
-- [ ] 支付二维码生成
-- [ ] 链上支付确认
+- [ ] Billing rule acceptance flow
+- [ ] Monthly billing
+- [ ] Payment QR code generation
+- [ ] On-chain payment confirmation
 
 ### Phase 4: Polish (Week 10+)
 
-- [ ] 性能优化
-- [ ] 更多策略
-- [ ] 用户反馈迭代
+- [ ] Performance optimization
+- [ ] More strategies
+- [ ] User feedback iteration
 
 ---
 
-## 七、参考资源
+## 7. Reference Resources
 
-- [OpenClaw 文档](https://docs.openclaw.ai)
-- [Freqtrade 文档](https://www.freqtrade.io)
-- [产品需求文档](requirement.md)
-- [技术规范文档](technical-spec.md)
+- [OpenClaw Documentation](https://docs.openclaw.ai)
+- [Freqtrade Documentation](https://www.freqtrade.io)
+- [Product Requirements Document](requirement.md)
+- [Technical Specification Document](technical-spec.md)
 
 ---
 
-**文档版本:** v1.0  
-**最后更新:** 2026-03-17  
-**作者:** CryptoClaw Team
+**Document Version:** v1.0  
+**Last Updated:** 2026-03-17  
+**Author:** CryptoClaw Team
