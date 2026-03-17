@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/CryptoClaw.jpg" alt="CryptoClaw Logo" width="400">
+  <img src="assets/CryptoClaw_small.jpg" alt="CryptoClaw Logo" width="100">
 </p>
 
 <h1 align="center">CryptoClaw 🦞</h1>
