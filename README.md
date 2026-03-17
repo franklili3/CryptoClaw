@@ -1,6 +1,18 @@
-# CryptoClaw 🦞
+<p align="center">
+  <img src="assets/CryptoClaw.jpg" alt="CryptoClaw Logo" width="400">
+</p>
 
-> Your AI quant trading team, right in your chat.
+<h1 align="center">CryptoClaw 🦞</h1>
+
+<p align="center">
+  <b>Your AI quant trading team, right in your chat.</b>
+</p>
+
+<p align="center">
+  <a href="README_CN.md">简体中文</a> | English
+</p>
+
+---
 
 **CryptoClaw** is an AI-powered cryptocurrency quantitative trading assistant that lets you write trading strategies in natural language and execute everything through Telegram or WhatsApp conversations.
 
