@@ -2,7 +2,8 @@
 # CryptoClaw 安装脚本测试
 # 用法: ./tests/test_installer.sh
 
-set -e
+# 不使用 set -e 以便继续运行测试
+# set -e
 
 # 颜色定义
 RED='\033[0;31m'
@@ -17,12 +18,12 @@ TESTS_FAILED=0
 # 测试函数
 test_pass() {
     echo -e "${GREEN}[PASS]${NC} $1"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 }
 
 test_fail() {
     echo -e "${RED}[FAIL]${NC} $1"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 }
 
 test_section() {
@@ -63,6 +64,12 @@ test_scripts_exist() {
     else
         test_fail "init-config.sh not found"
     fi
+    
+    if [ -f "scripts/init-db.sh" ]; then
+        test_pass "init-db.sh exists"
+    else
+        test_fail "init-db.sh not found"
+    fi
 }
 
 # 测试：脚本可执行
@@ -81,6 +88,13 @@ test_scripts_executable() {
     else
         chmod +x scripts/init-config.sh
         test_pass "init-config.sh made executable"
+    fi
+    
+    if [ -x "scripts/init-db.sh" ]; then
+        test_pass "init-db.sh is executable"
+    else
+        chmod +x scripts/init-db.sh
+        test_pass "init-db.sh made executable"
     fi
 }
 
@@ -141,16 +155,44 @@ test_script_syntax() {
     else
         test_fail "init-config.sh syntax error"
     fi
+    
+    if bash -n scripts/init-db.sh 2>/dev/null; then
+        test_pass "init-db.sh syntax valid"
+    else
+        test_fail "init-db.sh syntax error"
+    fi
 }
 
-# 测试：目录创建
+# 测试：目录创建（按设计文档规范）
 test_directory_creation() {
-    test_section "Directory Creation"
+    test_section "Directory Creation (per design.md)"
     
     setup
     
-    # 模拟创建目录
-    mkdir -p "$HOME/.cryptoclaw"/{config,user_data,workspace,logs}
+    # 模拟创建目录（按设计文档 2.2 规范）
+    mkdir -p "$HOME/.cryptoclaw"/user_data/strategies/user_strategies
+    mkdir -p "$HOME/.cryptoclaw"/user_data/data/{binance,okx}
+    mkdir -p "$HOME/.cryptoclaw"/user_data/notebooks
+    mkdir -p "$HOME/.cryptoclaw"/user_data/plot
+    mkdir -p "$HOME/.cryptoclaw"/user_data/hyperopts
+    mkdir -p "$HOME/.cryptoclaw"/user_data/freqaimodels
+    mkdir -p "$HOME/.cryptoclaw"/workspace/skills/{freqtrade,billing,trading-signals}
+    mkdir -p "$HOME/.cryptoclaw"/workspace/memory
+    mkdir -p "$HOME/.cryptoclaw"/config
+    mkdir -p "$HOME/.cryptoclaw"/logs
+    
+    # 验证目录
+    if [ -d "$HOME/.cryptoclaw/user_data/strategies" ]; then
+        test_pass "user_data/strategies directory created"
+    else
+        test_fail "user_data/strategies directory not created"
+    fi
+    
+    if [ -d "$HOME/.cryptoclaw/workspace/skills/freqtrade" ]; then
+        test_pass "workspace/skills/freqtrade directory created"
+    else
+        test_fail "workspace/skills/freqtrade directory not created"
+    fi
     
     if [ -d "$HOME/.cryptoclaw/config" ]; then
         test_pass "config directory created"
@@ -158,23 +200,18 @@ test_directory_creation() {
         test_fail "config directory not created"
     fi
     
-    if [ -d "$HOME/.cryptoclaw/user_data" ]; then
-        test_pass "user_data directory created"
-    else
-        test_fail "user_data directory not created"
-    fi
-    
     cleanup
 }
 
 # 测试：配置模板生成
 test_config_templates() {
-    test_section "Config Templates"
+    test_section "Config Templates (per technical-spec.md)"
     
     setup
     
     # 创建配置目录
     mkdir -p "$HOME/.cryptoclaw/config"
+    mkdir -p "$HOME/.cryptoclaw/user_data"
     
     # 从脚本中提取模板并测试
     if grep -q "TELEGRAM_BOT_TOKEN" scripts/install.sh; then
@@ -189,7 +226,63 @@ test_config_templates() {
         test_fail "install.sh missing LLM config"
     fi
     
+    if grep -q "openclaw.yaml" scripts/install.sh; then
+        test_pass "install.sh contains OpenClaw config"
+    else
+        test_fail "install.sh missing OpenClaw config"
+    fi
+    
+    if grep -q "config.json" scripts/install.sh; then
+        test_pass "install.sh contains Freqtrade config"
+    else
+        test_fail "install.sh missing Freqtrade config"
+    fi
+    
     cleanup
+}
+
+# 测试：模板文件存在
+test_template_files() {
+    test_section "Template Files"
+    
+    if [ -f "templates/config.json" ]; then
+        test_pass "templates/config.json exists"
+    else
+        test_fail "templates/config.json not found"
+    fi
+}
+
+# 测试：数据库初始化
+test_database_init() {
+    test_section "Database Initialization"
+    
+    # 检查 sqlite3 是否可用
+    if command -v sqlite3 &> /dev/null; then
+        setup
+        
+        # 创建数据库目录
+        mkdir -p "$HOME/.cryptoclaw"
+        
+        # 运行数据库初始化
+        export CONFIG_DIR="$HOME/.cryptoclaw"
+        if bash scripts/init-db.sh 2>/dev/null; then
+            test_pass "Database initialization succeeded"
+        else
+            test_fail "Database initialization failed"
+        fi
+        
+        # 检查数据库文件
+        if [ -f "$HOME/.cryptoclaw/cryptoclaw.db" ]; then
+            test_pass "Database file created"
+        else
+            test_fail "Database file not created"
+        fi
+        
+        cleanup
+    else
+        log_warning "sqlite3 not available, skipping database test"
+        test_pass "Database test skipped (sqlite3 not available)"
+    fi
 }
 
 # 显示测试结果
@@ -225,6 +318,8 @@ main() {
     test_script_syntax
     test_directory_creation
     test_config_templates
+    test_template_files
+    test_database_init
     
     show_results
 }

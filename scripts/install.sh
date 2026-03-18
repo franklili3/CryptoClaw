@@ -97,8 +97,27 @@ install_docker() {
 create_directories() {
     log_info "Creating directory structure..."
     
-    mkdir -p "$CONFIG_DIR"/{config,user_data,workspace,logs}
-    mkdir -p "$CONFIG_DIR"/user_data/{strategies,data,notebooks,plot}
+    # 按照设计文档规范创建目录结构
+    # 参考: design.md - 2.2 Agent Workspace
+    
+    # Freqtrade 标准 user_data 目录
+    mkdir -p "$CONFIG_DIR"/user_data/strategies/user_strategies
+    mkdir -p "$CONFIG_DIR"/user_data/data/{binance,okx}
+    mkdir -p "$CONFIG_DIR"/user_data/notebooks
+    mkdir -p "$CONFIG_DIR"/user_data/plot
+    mkdir -p "$CONFIG_DIR"/user_data/hyperopts
+    mkdir -p "$CONFIG_DIR"/user_data/freqaimodels
+    
+    # OpenClaw Agent 工作区
+    mkdir -p "$CONFIG_DIR"/workspace/skills/{freqtrade,billing,trading-signals}
+    mkdir -p "$CONFIG_DIR"/workspace/memory
+    
+    # 配置和日志目录
+    mkdir -p "$CONFIG_DIR"/config
+    mkdir -p "$CONFIG_DIR"/logs
+    
+    # 创建策略目录 __init__.py
+    touch "$CONFIG_DIR"/user_data/strategies/__init__.py
     
     log_success "Directory structure created at $CONFIG_DIR"
 }
@@ -132,31 +151,53 @@ LLM_MODEL=gpt-4
 # BINANCE_API_SECRET=your_binance_api_secret
 EOF
 
-    # 创建 OpenClaw 配置模板
+    # 创建 OpenClaw 配置模板（参考 design.md 2.1）
     cat > "$CONFIG_DIR/config/openclaw.yaml.example" << 'EOF'
 # OpenClaw Gateway 配置
+# 参考: CryptoClaw 设计文档 2.1
 
-gateway:
-  name: cryptoclaw
-  port: 8080
+# Agent 定义
+agents:
+  list:
+    - id: cryptoclaw
+      name: CryptoClaw
+      workspace: ~/.cryptoclaw/workspace
+      model: anthropic/claude-sonnet-4-5
+      default: true
 
+# 消息渠道绑定
+bindings:
+  - agentId: cryptoclaw
+    match:
+      channel: telegram
+  - agentId: cryptoclaw
+    match:
+      channel: whatsapp
+
+# 渠道配置
 channels:
   telegram:
-    enabled: true
-    token: ${TELEGRAM_BOT_TOKEN}
+    accounts:
+      default:
+        botToken: ${TELEGRAM_BOT_TOKEN}
+        dmPolicy: pairing
   whatsapp:
     enabled: false
-  feishu:
-    enabled: false
+    accounts:
+      default:
+        dmPolicy: allowlist
+        allowFrom: []
 
+# LLM 配置
 llm:
   provider: ${LLM_PROVIDER}
   apiKey: ${LLM_API_KEY}
   model: ${LLM_MODEL}
 
+# Freqtrade 配置
 freqtrade:
-  configPath: /app/user_data/config.json
-  userDataDir: /app/user_data
+  configPath: ~/.cryptoclaw/user_data/config.json
+  userDataDir: ~/.cryptoclaw/user_data
 EOF
 
     # 创建 docker-compose.yml
@@ -188,6 +229,116 @@ services:
 EOF
 
     log_success "Configuration templates created"
+}
+
+# 创建 Freqtrade 配置模板
+create_freqtrade_config() {
+    log_info "Creating Freqtrade configuration template..."
+    
+    # 创建 Freqtrade 配置模板（参考 technical-spec.md）
+    cat > "$CONFIG_DIR/user_data/config.json.example" << 'EOF'
+{
+    "max_open_trades": 3,
+    "stake_currency": "USDT",
+    "stake_amount": "unlimited",
+    "tradable_balance_ratio": 0.99,
+    "fiat_display_currency": "USD",
+    "dry_run": true,
+    "dry_run_wallet": 1000,
+    "cancel_open_orders_on_exit": false,
+    "trading_mode": "spot",
+    "margin_mode": "",
+    "unfilledtimeout": {
+        "entry": 10,
+        "exit": 10,
+        "exit_timeout_count": 0,
+        "unit": "minutes"
+    },
+    "entry_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1,
+        "price_last_balance": 0.0,
+        "check_depth_of_market": {
+            "enabled": false,
+            "bids_to_ask_delta": 1
+        }
+    },
+    "exit_pricing":{
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "exchange": {
+        "name": "binance",
+        "key": "${BINANCE_API_KEY}",
+        "secret": "${BINANCE_API_SECRET}",
+        "ccxt_sync_config": {},
+        "ccxt_async_config": {},
+        "pair_whitelist": [
+            "BTC/USDT",
+            "ETH/USDT"
+        ],
+        "pair_blacklist": [
+            "BNB/.*"
+        ]
+    },
+    "pairlists": [
+        {
+            "method": "StaticPairList"
+        }
+    ],
+    "telegram": {
+        "enabled": false,
+        "token": "${TELEGRAM_BOT_TOKEN}",
+        "chat_id": "${TELEGRAM_CHAT_ID}"
+    },
+    "api_server": {
+        "enabled": true,
+        "listen_ip_address": "0.0.0.0",
+        "listen_port": 8081,
+        "verbosity": "error"
+    },
+    "bot_name": "CryptoClaw",
+    "initial_state": "running",
+    "force_entry_enable": false,
+    "internals": {
+        "process_throttle_secs": 5
+    }
+}
+EOF
+
+    # 更新 docker-compose.yml 添加 Freqtrade API 端口
+    cat > "$CONFIG_DIR/config/docker-compose.yml" << 'EOF'
+version: '3.8'
+
+services:
+  cryptoclaw:
+    image: cryptoclaw/cryptoclaw:latest
+    container_name: cryptoclaw
+    restart: unless-stopped
+    
+    volumes:
+      - ~/.cryptoclaw/config/openclaw.yaml:/app/config/openclaw.yaml:ro
+      - ~/.cryptoclaw/user_data:/app/user_data
+      - ~/.cryptoclaw/workspace:/app/workspace
+      - ~/.cryptoclaw/logs:/app/logs
+      - ~/.cryptoclaw/cryptoclaw.db:/app/cryptoclaw.db
+    
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    
+    env_file:
+      - ~/.cryptoclaw/config/.env
+    
+    environment:
+      - TZ=Asia/Shanghai
+      - LOG_LEVEL=info
+      - OPENCLAW_CONFIG=/app/config/openclaw.yaml
+EOF
+
+    log_success "Freqtrade configuration created"
 }
 
 # 创建启动/停止脚本
@@ -275,6 +426,7 @@ run_config_wizard() {
     # 复制模板
     cp "$CONFIG_DIR/config/.env.example" "$CONFIG_DIR/config/.env"
     cp "$CONFIG_DIR/config/openclaw.yaml.example" "$CONFIG_DIR/config/openclaw.yaml"
+    cp "$CONFIG_DIR/user_data/config.json.example" "$CONFIG_DIR/user_data/config.json"
     
     echo ""
     echo -e "${YELLOW}🔧 CryptoClaw 配置向导${NC}"
@@ -348,6 +500,7 @@ run_config_wizard() {
     echo "配置文件位置:"
     echo "  - $CONFIG_DIR/config/.env (敏感信息)"
     echo "  - $CONFIG_DIR/config/openclaw.yaml (OpenClaw 配置)"
+    echo "  - $CONFIG_DIR/user_data/config.json (Freqtrade 配置)"
     echo ""
 }
 
@@ -381,6 +534,7 @@ main() {
     create_directories
     pull_image
     create_config_templates
+    create_freqtrade_config
     create_scripts
     run_config_wizard
     show_completion
