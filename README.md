@@ -105,11 +105,11 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📞 Contact
 
-- X (Twitter): [@cryptoclaw88](https://x.com/cryptoclaw88)
+- X (Twitter): [@cryptoclaw_ai](https://x.com/cryptoclaw_ai)
 - GitHub: [franklili3/cryptoclaw](https://github.com/franklili3/cryptoclaw)
 
 ---
 
-# Build in Public 🚀
+## Build in Public 🚀
 
-Follow the development journey on X: #BuildInPublic #CryptoClaw
+Follow the development journey on X

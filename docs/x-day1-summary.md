@@ -5,27 +5,19 @@
 ## 英文版 (English)
 
 ```
-Day 1 of #BuildInPublic complete! 🎉
+Day 1 of #BuildInPublic! 🎉
 
 ✅ Renamed to CryptoClaw
-✅ PRD v6.0 done (chat-first architecture)
-✅ English docs added
-✅ GitHub repo ready
-✅ Discussion post up
+✅ PRD v6.0 done
 
-Key decisions I made today:
-1️⃣ Chat-first: All features via Telegram/WhatsApp
-2️⃣ Local-first: API keys never uploaded
-3️⃣ Pay on profit: 10% only when you win
-4️⃣ Minimal cloud: ~$20/mo vs $99+ competitors
+Core bets:
+• Chat-first (Telegram/WhatsApp)
+• Local-first (keys stay local)
+• 10% fee only on profit
+• ~$20/mo vs $99+ competitors
 
-See the full breakdown 👇
-https://github.com/franklili3/CryptoClaw/discussions/1
-
-Star ⭐ the repo!
-github.com/franklili3/cryptoclaw
-
-#BuildInPublic #CryptoClaw
+👇
+github.com/franklili3/CryptoClaw/discussions/1
 ```
 
 ---

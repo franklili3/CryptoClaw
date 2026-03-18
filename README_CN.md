@@ -105,11 +105,11 @@ MIT License
 
 ## 📞 联系方式
 
-- X (Twitter): [@cryptoclaw88](https://x.com/cryptoclaw88)
+- X (Twitter): [@cryptoclaw_ai](https://x.com/cryptoclaw_ai)
 - GitHub: [franklili3/cryptoclaw](https://github.com/franklili3/cryptoclaw)
 
 ---
 
-# 公开构建 🚀
+## 公开构建 🚀
 
-在 X 上关注开发历程：#BuildInPublic #CryptoClaw
+在 X 上关注开发历程
