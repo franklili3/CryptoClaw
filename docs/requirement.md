@@ -31,7 +31,6 @@
 |----------|------|------|
 | **Telegram/WhatsApp** | 核心功能交互 | 策略编写、回测、交易、账单、支付等全部通过对话完成 |
 | **桌面客户端** | 敏感信息管理 | 仅用于 API Key 配置、交易所密钥等敏感信息 |
-| **Web 客户端** | 敏感信息管理（备选） | 无需安装，浏览器中管理敏感信息 |
 
 **通过对话实现的功能：**
 - ✅ 策略编写：用自然语言描述策略，AI 生成代码
@@ -338,7 +337,7 @@
 │  └→ 发送 /start 开始使用                                   │
 │                                                             │
 │  第2步：身份验证                                            │
-│  ├→ 机器人引导访问 Web 客户端（或下载桌面客户端）           │
+│  ├→ 机器人引导下载桌面客户端                                │
 │  ├→ 在客户端中完成邮箱注册和验证                            │
 │  └→ 返回对话继续                                            │
 │                                                             │
@@ -606,7 +605,8 @@
 |------|------|--------|
 | API Key 管理 | 配置大模型和交易所 API Key | P0 |
 | 密钥加密存储 | 本地 AES-256 加密存储 | P0 |
-| 用户认证 | 邮箱注册/登录/验证 | P0 |
+| 用户注册/登录 | 首次启动向导中的注册/登录流程 | P0 |
+| 用户登录/退出 | 设置面板中的独立功能，用于切换账号 | P0 |
 | 设备绑定 | 可选的设备绑定功能 | P1 |
 | 数据备份 | 本地数据备份和恢复 | P1 |
 | 日志查看 | 查看系统运行日志 | P2 |
@@ -767,75 +767,9 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
-##### 集成接口设计
+#### 集成接口设计
 
-```python
-# 集成层 API (Python)
-
-class OpenClawFreqtradeBridge:
-    """OpenClaw 与 Freqtrade 的桥接层"""
-    
-    def __init__(self, freqtrade_path: str, config_path: str):
-        self.freqtrade_path = freqtrade_path
-        self.config_path = config_path
-    
-    async def create_strategy(self, natural_language: str) -> str:
-        """
-        将自然语言转换为 Freqtrade 策略代码
-        
-        Args:
-            natural_language: 用户描述的策略逻辑
-            
-        Returns:
-            生成的策略文件路径
-        """
-        # 1. 调用 OpenClaw 理解用户意图
-        # 2. 生成 Freqtrade 策略代码
-        # 3. 保存到 user_data/strategies/
-        # 4. 验证策略语法
-        pass
-    
-    async def run_backtest(self, strategy: str, 
-                          timerange: str,
-                          stake_amount: float) -> BacktestResult:
-        """
-        执行回测并返回结果
-        
-        Args:
-            strategy: 策略名称
-            timerange: 时间范围 (如 "20240101-20241231")
-            stake_amount: 每笔交易金额
-            
-        Returns:
-            回测结果对象
-        """
-        # 1. 调用 freqtrade backtesting
-        # 2. 解析结果 JSON
-        # 3. 返回结构化数据
-        pass
-    
-    async def start_trading(self, strategy: str, 
-                           dry_run: bool = True) -> str:
-        """
-        启动实盘/模拟交易
-        
-        Args:
-            strategy: 策略名称
-            dry_run: 是否模拟模式
-            
-        Returns:
-            进程 ID
-        """
-        pass
-    
-    async def get_trade_status(self) -> TradeStatus:
-        """获取当前交易状态"""
-        pass
-    
-    async def stop_trading(self) -> bool:
-        """停止交易"""
-        pass
-```
+详见 [技术规范 - OpenClaw-Freqtrade 桥接层](technical-spec.md#41-openclaw-freqtrade-桥接层)
 
 ##### 数据流设计
 
@@ -983,163 +917,16 @@ class OpenClawFreqtradeBridge:
 
 所有数据均存储在用户本地，不上传到服务器。
 
-```sql
--- 本地配置（加密）
-CREATE TABLE config (
-  key TEXT PRIMARY KEY,
-  value TEXT  -- 加密存储
-);
-
--- 用户信息
-CREATE TABLE user (
-  id TEXT PRIMARY KEY,
-  email TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- API Key（加密存储）
-CREATE TABLE api_keys (
-  id INTEGER PRIMARY KEY,
-  provider TEXT NOT NULL,  -- openai, anthropic, binance, okx
-  key_name TEXT,
-  encrypted_key BLOB NOT NULL,  -- AES-256 加密
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- 交易记录
-CREATE TABLE trades (
-  id INTEGER PRIMARY KEY,
-  pair TEXT NOT NULL,
-  side TEXT NOT NULL,  -- buy/sell
-  amount REAL NOT NULL,
-  price REAL NOT NULL,
-  cost REAL NOT NULL,
-  profit REAL,
-  fee REAL,
-  strategy TEXT,
-  exchange TEXT,
-  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- 高水位记录
-CREATE TABLE watermarks (
-  id INTEGER PRIMARY KEY,
-  month TEXT NOT NULL UNIQUE,  -- YYYY-MM
-  starting_profit REAL NOT NULL,
-  ending_profit REAL NOT NULL,
-  high_watermark REAL NOT NULL,
-  billable_profit REAL NOT NULL,
-  fee_amount REAL NOT NULL,
-  status TEXT DEFAULT 'pending',  -- pending, paid
-  paid_at DATETIME,
-  tx_hash TEXT  -- 支付交易哈希
-);
-
--- 策略配置
-CREATE TABLE strategies (
-  id INTEGER PRIMARY KEY,
-  name TEXT NOT NULL,
-  code TEXT NOT NULL,  -- Python 策略代码
-  config TEXT NOT NULL,  -- JSON 配置
-  enabled INTEGER DEFAULT 1,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- 支付记录
-CREATE TABLE payments (
-  id INTEGER PRIMARY KEY,
-  month TEXT NOT NULL,  -- 对应哪个月的账单
-  amount REAL NOT NULL,
-  currency TEXT NOT NULL,  -- USDT, USDC
-  chain TEXT NOT NULL,  -- TRC20, ERC20
-  address TEXT NOT NULL,  -- 支付地址
-  tx_hash TEXT,  -- 链上交易哈希
-  status TEXT DEFAULT 'pending',  -- pending, confirmed
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  confirmed_at DATETIME
-);
-```
+**详细数据库 Schema 见** [技术规范 - 数据库 Schema](technical-spec.md#1-数据库-schema-sql)
 
 ### 7.2 云服务数据（服务端存储）
 
 云服务存储以下关键数据用于收费核对：
 
-```sql
--- 用户信息
-CREATE TABLE user (
-  id TEXT PRIMARY KEY,
-  email TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- 收费规则同意记录
-CREATE TABLE fee_agreements (
-  id UUID PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  rule_version TEXT NOT NULL,
-  agreed_at TIMESTAMP NOT NULL,
-  client_ip TEXT,
-  client_signature TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  
-  UNIQUE(user_id, rule_version)
-);
-
--- 用户确认的账单记录
-CREATE TABLE confirmed_bills (
-  id UUID PRIMARY KEY,
-  bill_id TEXT NOT NULL UNIQUE,
-  user_id TEXT NOT NULL,
-  month TEXT NOT NULL,
-  cumulative_profit DECIMAL(20, 8) NOT NULL,
-  high_watermark DECIMAL(20, 8) NOT NULL,
-  billable_profit DECIMAL(20, 8) NOT NULL,
-  fee_amount DECIMAL(20, 8) NOT NULL,
-  currency VARCHAR(10) NOT NULL DEFAULT 'USDT',
-  confirmed_at TIMESTAMP NOT NULL,
-  client_signature TEXT NOT NULL,
-  status VARCHAR(20) DEFAULT 'pending',  -- pending, paid, overdue
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- 支付确认记录
-CREATE TABLE payment_confirmations (
-  id UUID PRIMARY KEY,
-  bill_id TEXT NOT NULL,
-  user_id TEXT NOT NULL,
-  tx_hash TEXT NOT NULL UNIQUE,
-  amount DECIMAL(20, 8) NOT NULL,
-  currency VARCHAR(10) NOT NULL,
-  chain VARCHAR(20) NOT NULL,  -- TRC20, ERC20
-  from_address TEXT,
-  to_address TEXT NOT NULL,
-  block_number BIGINT,
-  confirmations INTEGER DEFAULT 0,
-  status VARCHAR(20) DEFAULT 'pending',  -- pending, confirmed, failed
-  confirmed_at TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW(),
-  
-  FOREIGN KEY (bill_id) REFERENCES confirmed_bills(bill_id)
-);
-
--- 用户支付地址（HD钱包派生）
-CREATE TABLE user_payment_addresses (
-  id UUID PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  currency VARCHAR(10) NOT NULL,
-  chain VARCHAR(20) NOT NULL,
-  address TEXT NOT NULL,
-  derivation_path TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  expires_at TIMESTAMP,
-  
-  UNIQUE(user_id, currency, chain)
-);
-
-```
+**详细数据库 Schema 见** [技术规范 - 云服务数据库 Schema](technical-spec.md#111-云服务用户信息服务端)
 
 **数据上传时机：**
-1. **用户注册** -用户注册邮箱
+1. **用户注册** - 用户注册邮箱
 2. **收费规则同意** - 用户同意时立即上传
 3. **账单确认** - 用户确认账单时上传
 
@@ -1163,69 +950,7 @@ CREATE TABLE user_payment_addresses (
 
 ### 8.2 高水位计算（本地）
 
-```javascript
-// 客户端本地计算
-class BillingCalculator {
-  
-  /**
-   * 计算月度账单
-   */
-  calculateMonthlyBilling(month) {
-    // 1. 从本地数据库获取本月所有交易
-    const trades = this.db.query(`
-      SELECT * FROM trades 
-      WHERE strftime('%Y-%m', timestamp) = ?
-      ORDER BY timestamp
-    `, [month]);
-    
-    // 2. 计算累计利润
-    const cumulativeProfit = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
-    
-    // 3. 获取历史高水位
-    const lastWatermark = this.db.queryOne(`
-      SELECT high_watermark FROM watermarks 
-      WHERE month < ? 
-      ORDER BY month DESC LIMIT 1
-    `, [month]);
-    const highWatermark = lastWatermark?.high_watermark || 0;
-    
-    // 4. 计算可计费利润
-    const billableProfit = Math.max(0, cumulativeProfit - highWatermark);
-    
-    // 5. 计算费用 (10%)
-    const fee = billableProfit * 0.10;
-    
-    // 6. 更新高水位
-    const newHighWatermark = Math.max(highWatermark, cumulativeProfit);
-    
-    // 7. 保存到本地数据库
-    this.db.run(`
-      INSERT OR REPLACE INTO watermarks 
-      (month, starting_profit, ending_profit, high_watermark, billable_profit, fee_amount, status)
-      VALUES (?, ?, ?, ?, ?, ?, 'pending')
-    `, [month, lastWatermark?.ending_profit || 0, cumulativeProfit, 
-        newHighWatermark, billableProfit, fee]);
-    
-    return {
-      month,
-      cumulativeProfit,
-      highWatermark,
-      billableProfit,
-      fee,
-      newHighWatermark
-    };
-  }
-  
-  /**
-   * 获取所有历史账单
-   */
-  getAllBillings() {
-    return this.db.query(`
-      SELECT * FROM watermarks ORDER BY month
-    `);
-  }
-}
-```
+详见 [技术规范 - 高水位账单计算类](technical-spec.md#31-高水位账单计算类)
 
 ### 8.3 账单展示（对话式交互）
 
@@ -1446,150 +1171,11 @@ class BillingCalculator {
 
 ### 9.4 支付地址管理
 
-```javascript
-// 固定收款地址（简单方案）
-const PAYMENT_ADDRESSES = {
-  'USDT-TRC20': 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-  'USDT-ERC20': '0x742d35Cc6634C0532925a3b844Bc9e7595f8bDe2',
-  'USDC-TRC20': 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-  'USDC-ERC20': '0x742d35Cc6634C0532925a3b844Bc9e7595f8bDe2'
-};
-
-// 可选：用户专属地址（HD钱包派生）
-function getUserPaymentAddress(userId, currency, chain) {
-  // 使用主钱包的 xpub 派生子地址
-  const path = `m/44'/${coinType}'/${userId}'/0/0`;
-  const address = deriveAddress(masterXpub, path);
-  return address;
-}
-```
+详见 [技术规范 - 支付地址管理](technical-spec.md#32-支付地址管理)
 
 ### 9.5 服务器链上监控（核心功能）
 
-```javascript
-// 服务端链上监控系统
-class PaymentMonitor {
-  
-  constructor() {
-    this.tronGridClient = new TronGridClient(TRONGRID_API_KEY);
-    this.etherscanClient = new EtherscanClient(ETHERSCAN_API_KEY);
-  }
-  
-  /**
-   * 启动监控任务
-   */
-  async startMonitoring() {
-    
-    // 使用 WebSocket 实时监听
-    this.startWebSocketListener();
-  }
-  
-  /**
-   * 检查待确认支付
-   */
-  async checkPendingPayments() {
-    const pendingOrders = await db.query(`
-      SELECT * FROM payment_orders 
-      WHERE status = 'pending' 
-      AND created_at > NOW() - INTERVAL '7 days'
-    `);
-    
-    for (const order of pendingOrders) {
-      await this.checkOrderPayment(order);
-    }
-  }
-  
-  /**
-   * 检查单个订单的支付情况
-   */
-  async checkOrderPayment(order) {
-    const { payment_address, amount, currency, chain } = order;
-    
-    let transactions;
-    if (chain === 'TRC20') {
-      transactions = await this.tronGridClient.getTRC20Transactions(
-        payment_address,
-        currency
-      );
-    } else if (chain === 'ERC20') {
-      transactions = await this.etherscanClient.getERC20Transactions(
-        payment_address,
-        currency
-      );
-    }
-    
-    // 核对交易
-    for (const tx of transactions) {
-      if (this.verifyTransaction(tx, order)) {
-        await this.confirmPayment(order, tx);
-        break;
-      }
-    }
-  }
-  
-  /**
-   * 验证交易
-   */
-  verifyTransaction(tx, order) {
-    // 核对地址
-    if (tx.to.toLowerCase() !== order.payment_address.toLowerCase()) {
-      return false;
-    }
-    
-    // 核对金额（允许1%误差，应对精度问题）
-    const expectedAmount = order.amount;
-    const actualAmount = parseFloat(tx.value) / 1e6;  // USDT 6 decimals
-    if (actualAmount < expectedAmount * 0.99) {
-      return false;
-    }
-    
-    // 核对确认数
-    if (tx.confirmations < MIN_CONFIRMATIONS) {
-      return false;
-    }
-    
-    return true;
-  }
-  
-  /**
-   * 确认支付
-   */
-  async confirmPayment(order, tx) {
-    await db.transaction(async (conn) => {
-      // 更新支付订单状态
-      await conn.query(`
-        UPDATE payment_orders 
-        SET status = 'paid', paid_at = NOW()
-        WHERE id = ?
-      `, [order.id]);
-      
-      // 记录支付详情
-      await conn.query(`
-        INSERT INTO payment_confirmations 
-        (bill_id, user_id, tx_hash, amount, currency, chain, 
-         from_address, to_address, status, confirmed_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', NOW())
-      `, [order.bill_id, order.user_id, tx.hash, 
-          tx.value / 1e6, order.currency, order.chain,
-          tx.from, tx.to]);
-      
-      // 更新账单状态
-      await conn.query(`
-        UPDATE confirmed_bills 
-        SET status = 'paid'
-        WHERE bill_id = ?
-      `, [order.bill_id]);
-      
-      // 通知用户
-      await this.notifyUser(order.user_id, {
-        type: 'payment_confirmed',
-        bill_id: order.bill_id,
-        amount: order.amount
-      });
-    });
-  }
-}
-```
+详见 [技术规范 - 服务端链上支付监控系统](technical-spec.md#33-服务端链上支付监控系统)
 
 **支持的监控方式：**
 
@@ -1602,134 +1188,7 @@ class PaymentMonitor {
 
 用户确认账单后，客户端将账单数据上传至服务器：
 
-```javascript
-// 客户端账单确认上传
-class BillingUploader {
-  
-  /**
-   * 用户确认账单并上传
-   */
-  async confirmAndUpload(monthBilling) {
-    // 1. 用户在界面上确认账单
-    const userConfirmed = await this.showBillingConfirmation(monthBilling);
-    if (!userConfirmed) {
-      return { success: false, reason: 'user_cancelled' };
-    }
-    
-    // 2. 准备上传数据（不含交易明细）
-    const uploadData = {
-      bill_id: this.generateBillId(),
-      user_id: this.getCurrentUserId(),
-      month: monthBilling.month,
-      cumulative_profit: monthBilling.cumulativeProfit,
-      high_watermark: monthBilling.highWatermark,
-      billable_profit: monthBilling.billableProfit,
-      fee_amount: monthBilling.fee,
-      currency: 'USDT',
-      trade_count: monthBilling.trades.length,
-      confirmed_at: new Date().toISOString()
-    };
-    
-    // 3. 生成客户端签名
-    const signature = this.signData(uploadData);
-    uploadData.client_signature = signature;
-    
-    // 4. 上传至服务器
-    try {
-      const response = await fetch('/api/billing/confirm', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(uploadData)
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        // 5. 保存服务器返回的支付信息
-        this.savePaymentInfo({
-          bill_id: uploadData.bill_id,
-          payment_address: result.payment_address,
-          expires_at: result.expires_at
-        });
-        
-        return { 
-          success: true, 
-          payment_address: result.payment_address 
-        };
-      } else {
-        return { success: false, reason: result.error };
-      }
-    } catch (error) {
-      // 网络失败，稍后重试
-      this.queueForRetry(uploadData);
-      return { success: false, reason: 'network_error' };
-    }
-  }
-  
-  /**
-   * 签名数据
-   */
-  signData(data) {
-    const message = JSON.stringify(data);
-    const hmac = crypto.createHmac('sha256', this.getClientSecret());
-    hmac.update(message);
-    return hmac.digest('hex');
-  }
-}
-```
-
-**服务端验证：**
-
-```python
-# 服务端账单确认接口
-@router.post('/api/billing/confirm')
-async def confirm_billing(request: BillingConfirmRequest):
-    # 1. 验证签名
-    if not verify_client_signature(request.dict(), request.client_signature):
-        raise HTTPException(400, 'Invalid signature')
-    
-    # 2. 检查是否已确认
-    existing = await db.fetch_one(
-        'SELECT id FROM confirmed_bills WHERE user_id = ? AND month = ?',
-        request.user_id, request.month
-    )
-    if existing:
-        raise HTTPException(400, 'Bill already confirmed')
-    
-    # 3. 生成支付地址
-    payment_address = await generate_payment_address(
-        request.user_id, 
-        request.currency
-    )
-    
-    # 4. 保存账单
-    await db.execute('''
-        INSERT INTO confirmed_bills 
-        (bill_id, user_id, month, cumulative_profit, high_watermark, 
-         billable_profit, fee_amount, currency, confirmed_at, client_signature, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
-    ''', request.bill_id, request.user_id, request.month, 
-         request.cumulative_profit, request.high_watermark,
-         request.billable_profit, request.fee_amount, request.currency,
-         request.confirmed_at, request.client_signature)
-    
-    # 5. 创建支付订单
-    await db.execute('''
-        INSERT INTO payment_orders 
-        (bill_id, user_id, amount, currency, chain, payment_address, status, expires_at)
-        VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)
-    ''', request.bill_id, request.user_id, request.fee_amount,
-         request.currency, 'TRC20', payment_address,
-         datetime.now() + timedelta(days=7))
-    
-    return {
-        'success': True,
-        'bill_id': request.bill_id,
-        'payment_address': payment_address,
-        'amount': request.fee_amount,
-        'expires_at': (datetime.now() + timedelta(days=7)).isoformat()
-    }
-```
+详见 [技术规范 - 账单确认上传客户端](technical-spec.md#34-账单确认上传客户端) 和 [技术规范 - 服务端账单确认接口](technical-spec.md#43-服务端账单确认接口)
 
 ### 9.7 诚信付费机制
 
@@ -1809,21 +1268,7 @@ async def confirm_billing(request: BillingConfirmRequest):
 
 ### 8.2 更新 API
 
-```typescript
-// 检查更新
-GET /api/updates/check?version=1.0.0&platform=win32
-
-Response:
-{
-  "hasUpdate": true,
-  "latestVersion": "1.2.0",
-  "forceUpdate": false,  // 是否强制更新
-  "releaseNotes": "### 新功能\n- 新增 ETH 策略\n- 优化性能",
-  "downloadUrl": "/api/updates/download/v1.2.0/win32",
-  "fileSize": 125829120,
-  "checksum": "sha256:abc123..."
-}
-```
+详见 [技术规范 - 自动更新 API](technical-spec.md#45-自动更新-api)
 
 ---
 
@@ -2036,98 +1481,11 @@ Response:
 
 #### 客户端用户注册/登录
 
-```javascript
-// Electron 中嵌入用户注册/登录页面
-async function openAuth(mode = 'login') {
-  // 打开认证窗口（内嵌浏览器）
-  const authWindow = new BrowserWindow({
-    width: 450,
-    height: 600,
-    title: mode === 'login' ? '登录' : '注册',
-    resizable: false,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true
-    }
-  });
-  
-  // 加载认证页面（云端托管）
-  authWindow.loadURL(`https://auth.quantagent.pro/${mode}`);
-  
-  // 监听认证完成事件
-  ipcMain.on('auth-complete', async (event, result) => {
-    if (result.success) {
-      // 保存用户信息到本地（不含敏感信息）
-      await localDB.saveUserInfo({
-        userId: result.userId,
-        email: result.email,
-        supabaseKey: result.supabaseKey  // 服务端下发的 API Key
-      });
-      
-      // 通知渠道端绑定用户
-      await notifyChannelBinding(result.userId);
-    }
-    authWindow.close();
-  });
-  
-  // 监听窗口关闭
-  authWindow.on('closed', () => {
-    authWindow = null;
-  });
-}
-
-// 检查登录状态
-async function checkAuthStatus() {
-  const userInfo = await localDB.getUserInfo();
-  if (!userInfo) {
-    // 未登录，打开登录窗口
-    return openAuth('login');
-  }
-  
-  // 验证 Supabase Key 是否有效
-  const isValid = await verifySupabaseKey(userInfo.supabaseKey);
-  if (!isValid) {
-    // Key 已失效（可能逾期未支付），提示用户
-    dialog.showMessageBox({
-      type: 'warning',
-      title: '账户状态异常',
-      message: '您的账户可能已逾期，请检查支付状态',
-      buttons: ['查看账单', '稍后处理']
-    }).then(result => {
-      if (result.response === 0) {
-        // 引导用户到渠道端查看账单
-        shell.openExternal('https://t.me/quantagent_bot');
-      }
-    });
-  }
-  
-  return isValid;
-}
-```
+详见 [技术规范 - 客户端用户注册/登录](technical-spec.md#36-客户端用户注册登录)
 
 #### 离线优先策略
 
-```javascript
-// 数据同步策略
-class DataSync {
-  async syncBillingData() {
-    if (!navigator.onLine) {
-      // 离线时使用本地缓存
-      return await localDB.getBillingData();
-    }
-    
-    try {
-      // 在线时同步云端数据
-      const cloudData = await api.fetchBillingData();
-      await localDB.saveBillingData(cloudData);
-      return cloudData;
-    } catch (error) {
-      // 网络失败时降级到本地
-      return await localDB.getBillingData();
-    }
-  }
-}
-```
+详见 [技术规范 - 离线优先数据同步](technical-spec.md#37-离线优先数据同步)
 
 ---
 
@@ -2216,177 +1574,17 @@ class DataSync {
 
 #### 密钥派生实现
 
-```python
-import hashlib
-import base64
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-
-class KeyManager:
-    """密钥管理器"""
-    
-    ITERATIONS = 100000
-    KEY_LENGTH = 32  # 256 bits
-    
-    @staticmethod
-    def derive_master_key(password: str, salt: bytes) -> bytes:
-        """
-        从用户密码派生主密钥
-        
-        Args:
-            password: 用户密码
-            salt: 随机盐值 (存储在服务端)
-            
-        Returns:
-            256-bit 主密钥
-        """
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=KeyManager.KEY_LENGTH,
-            salt=salt,
-            iterations=KeyManager.ITERATIONS,
-        )
-        return kdf.derive(password.encode())
-    
-    @staticmethod
-    def encrypt_api_key(api_key: str, master_key: bytes) -> dict:
-        """
-        加密 API Key
-        
-        Returns:
-            {
-                'ciphertext': base64编码的密文,
-                'nonce': base64编码的随机数,
-                'tag': base64编码的认证标签
-            }
-        """
-        nonce = os.urandom(12)  # 96-bit nonce for GCM
-        aesgcm = AESGCM(master_key)
-        
-        ciphertext = aesgcm.encrypt(
-            nonce,
-            api_key.encode(),
-            None  # no additional data
-        )
-        
-        return {
-            'ciphertext': base64.b64encode(ciphertext).decode(),
-            'nonce': base64.b64encode(nonce).decode()
-        }
-    
-    @staticmethod
-    def decrypt_api_key(encrypted: dict, master_key: bytes) -> str:
-        """解密 API Key"""
-        nonce = base64.b64decode(encrypted['nonce'])
-        ciphertext = base64.b64decode(encrypted['ciphertext'])
-        
-        aesgcm = AESGCM(master_key)
-        plaintext = aesgcm.decrypt(nonce, ciphertext, None)
-        
-        return plaintext.decode()
-```
+详见 [技术规范 - 密钥管理器](technical-spec.md#42-密钥管理器)
 
 ### 10.4 本地数据安全
 
 由于所有数据存储在本地，安全策略简化为：
 
-```javascript
-// 本地数据加密
-class LocalDataSecurity {
-  
-  /**
-   * 使用用户密码派生的密钥加密敏感数据
-   */
-  encryptData(plaintext, userPassword) {
-    // 从密码派生密钥
-    const key = this.deriveKey(userPassword);
-    
-    // AES-256-GCM 加密
-    const nonce = crypto.randomBytes(12);
-    const cipher = crypto.createCipheriv('aes-256-gcm', key, nonce);
-    const encrypted = Buffer.concat([
-      cipher.update(plaintext, 'utf8'),
-      cipher.final()
-    ]);
-    const tag = cipher.getAuthTag();
-    
-    return {
-      nonce: nonce.toString('base64'),
-      data: encrypted.toString('base64'),
-      tag: tag.toString('base64')
-    };
-  }
-  
-  /**
-   * 解密本地数据
-   */
-  decryptData(encrypted, userPassword) {
-    const key = this.deriveKey(userPassword);
-    
-    const decipher = crypto.createDecipheriv(
-      'aes-256-gcm', 
-      key, 
-      Buffer.from(encrypted.nonce, 'base64')
-    );
-    decipher.setAuthTag(Buffer.from(encrypted.tag, 'base64'));
-    
-    const decrypted = Buffer.concat([
-      decipher.update(Buffer.from(encrypted.data, 'base64')),
-      decipher.final()
-    ]);
-    
-    return decrypted.toString('utf8');
-  }
-}
-```
+详见 [技术规范 - 本地数据加密](technical-spec.md#35-本地数据加密)
 
 ### 10.5 支付确认安全
 
-```javascript
-// 客户端支付确认
-class PaymentConfirmation {
-  
-
-  async confirmPayment(month, txHash) {
-       
-    // 1. 验证链上交易
-    const verified = await this.verifyOnChain(txHash, month);
-    
-    // 2. 更新本地订单状态
-    this.db.run(`
-      UPDATE watermarks 
-      SET status = 'paid', paid_at = ?, tx_hash = ?, verified = ?
-      WHERE month = ?
-    `, [new Date().toISOString(), txHash, verified, month]);
-    
-    // 3. 通知服务端
-    if (verified) {
-      await this.notifyServer(month, txHash);
-    }
-    
-    return { success: true, verified };
-  }
-  
-  /**
-   * 链上验证
-   */
-  async verifyOnChain(txHash, month) {
-    try {
-      // 使用公共 API 查询交易
-      const tx = await this.fetchTransaction(txHash);
-      const bill = this.getBilling(month);
-      
-      // 验证金额和收款地址
-      return tx.to === PAYMENT_ADDRESS && 
-             tx.value >= bill.fee_amount * 1e6;
-    } catch {
-      // 验证失败不影响用户标记为已支付
-      return false;
-    }
-  }
-}
-```
+详见 [技术规范 - 支付确认客户端](technical-spec.md#38-支付确认客户端)
 
 ---
 
@@ -2422,53 +1620,7 @@ class PaymentConfirmation {
 | 风控规则 | 100% | 规则触发、阈值判断 |
 | 支付确认 | 90% | 交易哈希验证、状态更新 |
 
-```python
-# 示例: 高水位计算单元测试
-import pytest
-from datetime import datetime
-
-class TestHighWatermark:
-    
-    def test_first_month_profit(self):
-        """首月盈利: 全部计费"""
-        result = calculate_billing(
-            cumulative_profit=500,
-            previous_high_watermark=0
-        )
-        assert result['billable'] == 500
-        assert result['fee'] == 50  # 10%
-        assert result['new_high_watermark'] == 500
-    
-    def test_below_high_watermark(self):
-        """低于高水位: 不计费"""
-        result = calculate_billing(
-            cumulative_profit=300,
-            previous_high_watermark=500
-        )
-        assert result['billable'] == 0
-        assert result['fee'] == 0
-        assert result['new_high_watermark'] == 500  # 保持不变
-    
-    def test_exceed_high_watermark(self):
-        """超过高水位: 只计费超出部分"""
-        result = calculate_billing(
-            cumulative_profit=700,
-            previous_high_watermark=500
-        )
-        assert result['billable'] == 200
-        assert result['fee'] == 20
-        assert result['new_high_watermark'] == 700
-    
-    def test_negative_profit(self):
-        """亏损情况: 不计费"""
-        result = calculate_billing(
-            cumulative_profit=-100,
-            previous_high_watermark=500
-        )
-        assert result['billable'] == 0
-        assert result['fee'] == 0
-        assert result['new_high_watermark'] == 500
-```
+详见 [技术规范 - 高水位计算单元测试](technical-spec.md#44-高水位计算单元测试)
 
 ### 13.3 集成测试
 
@@ -2482,48 +1634,7 @@ class TestHighWatermark:
 
 ### 13.4 E2E 测试
 
-```typescript
-// Playwright E2E 测试示例
-import { test, expect } from '@playwright/test';
-
-test.describe('用户首次使用流程', () => {
-  
-  test('策略回测完整流程', async ({ page }) => {
-    // 假设已安装客户端
-    await page.goto('/backtest');
-    
-    // 输入自然语言策略
-    await page.fill('.strategy-input', 
-      '当RSI低于30时买入，高于70时卖出');
-    
-    // 生成策略
-    await page.click('text=生成策略');
-    await expect(page.locator('.strategy-code')).toBeVisible();
-    
-    // 运行回测
-    await page.click('text=运行回测');
-    await page.waitForSelector('.backtest-result', { timeout: 60000 });
-    
-    // 验证结果
-    await expect(page.locator('.profit-value')).toBeVisible();
-  });
-  
-  test('账单生成和支付流程', async ({ page }) => {
-    // 查看账单
-    await page.goto('/billing');
-    
-    // 验证账单显示
-    await expect(page.locator('.billable-profit')).toBeVisible();
-    await expect(page.locator('.fee-amount')).toBeVisible();
-    
-    // 点击支付
-    await page.click('text=立即支付');
-    
-    // 验证支付界面
-    await expect(page.locator('.payment-address')).toBeVisible();
-  });
-});
-```
+详见 [技术规范 - E2E 测试](technical-spec.md#6-e2e-测试)
 
 ### 13.5 性能测试
 
@@ -2601,22 +1712,7 @@ test.describe('用户首次使用流程', () => {
 
 ### 13.2 日志规范
 
-```json
-{
-  "timestamp": "2026-03-16T08:30:00.000Z",
-  "level": "INFO",
-  "service": "quantagent-api",
-  "trace_id": "abc123",
-  "user_id": "user_xxx",
-  "action": "trade_report",
-  "result": "success",
-  "duration_ms": 45,
-  "metadata": {
-    "pair": "BTC/USDT",
-    "profit": 25.50
-  }
-}
-```
+详见 [技术规范 - 日志格式](technical-spec.md#25-日志格式)
 
 ---
 
@@ -2715,35 +1811,7 @@ test.describe('用户首次使用流程', () => {
 
 ### 17.4 CI/CD 流程
 
-```yaml
-# .github/workflows/release.yml
-name: Release
-
-on:
-  push:
-    tags:
-      - 'v*'
-
-jobs:
-  build:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Build macOS app
-        run: |
-          npm ci
-          npm run build:mac
-          
-      - name: Upload to Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: dist/*.dmg
-          
-      - name: Upload to S3 (optional)
-        run: |
-          aws s3 sync dist/ s3://quantagent-releases/
-```
+详见 [技术规范 - CI/CD 发布流程](technical-spec.md#71-cicd-发布流程)
 
 ---
 
@@ -2895,7 +1963,7 @@ CryptoClaw 是一款量化交易辅助工具，不构成任何投资建议。
    - AI 主动推送交易通知和风控告警
 
 2. **客户端精简**
-   - 桌面/Web 客户端仅用于管理敏感信息
+   - 桌面客户端仅用于管理敏感信息
    - API Key 本地加密存储，永不上传
    - 简化客户端开发复杂度
 

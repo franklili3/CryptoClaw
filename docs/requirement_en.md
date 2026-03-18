@@ -31,7 +31,6 @@
 |----------|------|------|
 | **Telegram/WhatsApp** | Core feature interaction | Strategy writing, backtesting, trading, billing, payments all through conversation |
 | **Desktop Client** | Sensitive info management | Only for API Key configuration, exchange keys, etc. |
-| **Web Client** | Sensitive info management (alternative) | Manage sensitive info in browser, no installation needed |
 
 **Features via Chat:**
 - ✅ Strategy Writing: Describe strategy in natural language, AI generates code
@@ -287,7 +286,7 @@ Before first live trading, users must agree to fee rules:
 │  └→ Send /start to begin                                   │
 │                                                             │
 │  Step 2: Authentication                                    │
-│  ├→ Bot guides to Web client (or download desktop client)  │
+│  ├→ Bot guides to download desktop client                   │
 │  ├→ Complete email registration and verification in client │
 │  └→ Return to chat to continue                             │
 │                                                             │

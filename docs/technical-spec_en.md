@@ -1,29 +1,31 @@
-# CryptoClaw - 技术规范文档
+# CryptoClaw - Technical Specification
 
-> 本文档从产品需求文档 (requirement.md) 中提取的所有代码块，按类别组织
+> This document contains all code blocks extracted from the Product Requirements Document (requirement.md), organized by category
 
----
-
-## 目录
-
-- [1. 数据库 Schema (SQL)](#1-数据库-schema-sql)
-- [2. API 数据结构 (JSON)](#2-api-数据结构-json)
-- [3. 客户端代码 (JavaScript/TypeScript)](#3-客户端代码-javascripttypescript)
-- [4. 后端代码 (Python)](#4-后端代码-python)
-- [5. 配置文件 (JSON)](#5-配置文件-json)
+[中文版](technical-spec.md) | [PRD](requirement_en.md)
 
 ---
 
-## 1. 数据库 Schema (SQL)
+## Table of Contents
 
-### 1.1 收费规则同意记录（服务端）
+- [1. Database Schema (SQL)](#1-database-schema-sql)
+- [2. API Data Structures (JSON)](#2-api-data-structures-json)
+- [3. Client Code (JavaScript/TypeScript)](#3-client-code-javascripttypescript)
+- [4. Backend Code (Python)](#4-backend-code-python)
+- [5. Configuration Files (YAML)](#5-configuration-files-yaml)
 
-**来源**: Section 2.2 - 收费规则同意流程
+---
 
-**描述**: 存储用户对收费规则的同意记录，用于实盘交易前的合规确认。
+## 1. Database Schema (SQL)
+
+### 1.1 Fee Agreement Records (Server)
+
+**Source**: Section 2.2 - Fee Agreement Flow
+
+**Description**: Stores user fee rule agreement records for compliance confirmation before live trading.
 
 ```sql
--- 收费规则同意记录（服务端）
+-- Fee Agreement Records (Server)
 CREATE TABLE fee_agreements (
   id UUID PRIMARY KEY,
   user_id TEXT NOT NULL,
@@ -37,14 +39,14 @@ CREATE TABLE fee_agreements (
 );
 ```
 
-### 1.2 支付订单（服务端）
+### 1.2 Payment Orders (Server)
 
-**来源**: Section 2.4 - 支付与核对流程
+**Source**: Section 2.4 - Payment & Verification Flow
 
-**描述**: 服务端存储的支付订单信息，记录账单对应的支付详情。
+**Description**: Server-side payment order information, recording payment details for bills.
 
 ```sql
--- 支付订单（服务端）
+-- Payment Orders (Server)
 CREATE TABLE payment_orders (
   id UUID PRIMARY KEY,
   bill_id TEXT NOT NULL,
@@ -61,14 +63,14 @@ CREATE TABLE payment_orders (
 );
 ```
 
-### 1.3 支付记录（服务端）
+### 1.3 Payment Records (Server)
 
-**来源**: Section 2.4 - 支付与核对流程
+**Source**: Section 2.4 - Payment & Verification Flow
 
-**描述**: 服务端存储的链上支付确认记录。
+**Description**: Server-side on-chain payment confirmation records.
 
 ```sql
--- 支付记录（服务端）
+-- Payment Records (Server)
 CREATE TABLE payments (
   id UUID PRIMARY KEY,
   order_id TEXT NOT NULL,
@@ -85,28 +87,28 @@ CREATE TABLE payments (
 );
 ```
 
-### 1.4 本地配置（客户端 SQLite）
+### 1.4 Local Config (Client SQLite)
 
-**来源**: Section 7.1 - 客户端本地数据
+**Source**: Section 7.1 - Client Local Data
 
-**描述**: 客户端本地存储的加密配置信息。
+**Description**: Client-side encrypted configuration storage.
 
 ```sql
--- 本地配置（加密）
+-- Local Config (Encrypted)
 CREATE TABLE config (
   key TEXT PRIMARY KEY,
-  value TEXT  -- 加密存储
+  value TEXT  -- Encrypted storage
 );
 ```
 
-### 1.5 用户信息（客户端 SQLite）
+### 1.5 User Info (Client SQLite)
 
-**来源**: Section 7.1 - 客户端本地数据
+**Source**: Section 7.1 - Client Local Data
 
-**描述**: 客户端本地存储的用户基本信息。
+**Description**: Client-side basic user information storage.
 
 ```sql
--- 用户信息
+-- User Info
 CREATE TABLE user (
   id TEXT PRIMARY KEY,
   email TEXT,
@@ -114,31 +116,31 @@ CREATE TABLE user (
 );
 ```
 
-### 1.6 API Key（客户端 SQLite，加密存储）
+### 1.6 API Keys (Client SQLite, Encrypted)
 
-**来源**: Section 7.1 - 客户端本地数据
+**Source**: Section 7.1 - Client Local Data
 
-**描述**: 客户端本地加密存储的各类 API Key。
+**Description**: Client-side encrypted storage of various API keys.
 
 ```sql
--- API Key（加密存储）
+-- API Keys (Encrypted Storage)
 CREATE TABLE api_keys (
   id INTEGER PRIMARY KEY,
   provider TEXT NOT NULL,  -- openai, anthropic, binance, okx
   key_name TEXT,
-  encrypted_key BLOB NOT NULL,  -- AES-256 加密
+  encrypted_key BLOB NOT NULL,  -- AES-256 encrypted
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-### 1.7 交易记录（客户端 SQLite）
+### 1.7 Trade Records (Client SQLite)
 
-**来源**: Section 7.1 - 客户端本地数据
+**Source**: Section 7.1 - Client Local Data
 
-**描述**: 客户端本地存储的所有交易记录。
+**Description**: Client-side storage of all trade records.
 
 ```sql
--- 交易记录
+-- Trade Records
 CREATE TABLE trades (
   id INTEGER PRIMARY KEY,
   pair TEXT NOT NULL,
@@ -154,14 +156,14 @@ CREATE TABLE trades (
 );
 ```
 
-### 1.8 高水位记录（客户端 SQLite）
+### 1.8 High Watermark Records (Client SQLite)
 
-**来源**: Section 7.1 - 客户端本地数据
+**Source**: Section 7.1 - Client Local Data
 
-**描述**: 客户端本地存储的高水位计费记录。
+**Description**: Client-side storage of high watermark billing records.
 
 ```sql
--- 高水位记录
+-- High Watermark Records
 CREATE TABLE watermarks (
   id INTEGER PRIMARY KEY,
   month TEXT NOT NULL UNIQUE,  -- YYYY-MM
@@ -172,58 +174,58 @@ CREATE TABLE watermarks (
   fee_amount REAL NOT NULL,
   status TEXT DEFAULT 'pending',  -- pending, paid
   paid_at DATETIME,
-  tx_hash TEXT  -- 支付交易哈希
+  tx_hash TEXT  -- Payment transaction hash
 );
 ```
 
-### 1.9 策略配置（客户端 SQLite）
+### 1.9 Strategy Config (Client SQLite)
 
-**来源**: Section 7.1 - 客户端本地数据
+**Source**: Section 7.1 - Client Local Data
 
-**描述**: 客户端本地存储的策略代码和配置。
+**Description**: Client-side storage of strategy code and configuration.
 
 ```sql
--- 策略配置
+-- Strategy Config
 CREATE TABLE strategies (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
-  code TEXT NOT NULL,  -- Python 策略代码
-  config TEXT NOT NULL,  -- JSON 配置
+  code TEXT NOT NULL,  -- Python strategy code
+  config TEXT NOT NULL,  -- JSON config
   enabled INTEGER DEFAULT 1,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-### 1.10 支付记录（客户端 SQLite）
+### 1.10 Payment Records (Client SQLite)
 
-**来源**: Section 7.1 - 客户端本地数据
+**Source**: Section 7.1 - Client Local Data
 
-**描述**: 客户端本地存储的支付记录。
+**Description**: Client-side storage of payment records.
 
 ```sql
--- 支付记录
+-- Payment Records
 CREATE TABLE payments (
   id INTEGER PRIMARY KEY,
-  month TEXT NOT NULL,  -- 对应哪个月的账单
+  month TEXT NOT NULL,  -- Corresponding bill month
   amount REAL NOT NULL,
   currency TEXT NOT NULL,  -- USDT, USDC
   chain TEXT NOT NULL,  -- TRC20, ERC20
-  address TEXT NOT NULL,  -- 支付地址
-  tx_hash TEXT,  -- 链上交易哈希
+  address TEXT NOT NULL,  -- Payment address
+  tx_hash TEXT,  -- On-chain transaction hash
   status TEXT DEFAULT 'pending',  -- pending, confirmed
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   confirmed_at DATETIME
 );
 ```
 
-### 1.11 云服务用户信息（服务端）
+### 1.11 Cloud Service User Info (Server)
 
-**来源**: Section 7.2 - 云服务数据
+**Source**: Section 7.2 - Cloud Service Data
 
-**描述**: 服务端存储的用户基本信息。
+**Description**: Server-side basic user information storage.
 
 ```sql
--- 用户信息
+-- User Info
 CREATE TABLE user (
   id TEXT PRIMARY KEY,
   email TEXT,
@@ -231,14 +233,14 @@ CREATE TABLE user (
 );
 ```
 
-### 1.12 云服务收费规则同意记录（服务端）
+### 1.12 Cloud Service Fee Agreement Records (Server)
 
-**来源**: Section 7.2 - 云服务数据
+**Source**: Section 7.2 - Cloud Service Data
 
-**描述**: 服务端存储的收费规则同意记录（与 1.1 相同，这里强调是云服务数据）。
+**Description**: Server-side fee agreement records (same as 1.1, emphasized as cloud service data).
 
 ```sql
--- 收费规则同意记录
+-- Fee Agreement Records
 CREATE TABLE fee_agreements (
   id UUID PRIMARY KEY,
   user_id TEXT NOT NULL,
@@ -252,14 +254,14 @@ CREATE TABLE fee_agreements (
 );
 ```
 
-### 1.13 用户确认的账单记录（服务端）
+### 1.13 Confirmed Bills (Server)
 
-**来源**: Section 7.2 - 云服务数据
+**Source**: Section 7.2 - Cloud Service Data
 
-**描述**: 服务端存储的用户已确认的账单摘要数据。
+**Description**: Server-side storage of user-confirmed bill summary data.
 
 ```sql
--- 用户确认的账单记录
+-- Confirmed Bills
 CREATE TABLE confirmed_bills (
   id UUID PRIMARY KEY,
   bill_id TEXT NOT NULL UNIQUE,
@@ -277,14 +279,14 @@ CREATE TABLE confirmed_bills (
 );
 ```
 
-### 1.14 支付确认记录（服务端）
+### 1.14 Payment Confirmations (Server)
 
-**来源**: Section 7.2 - 云服务数据
+**Source**: Section 7.2 - Cloud Service Data
 
-**描述**: 服务端存储的链上支付确认详情。
+**Description**: Server-side storage of on-chain payment confirmation details.
 
 ```sql
--- 支付确认记录
+-- Payment Confirmations
 CREATE TABLE payment_confirmations (
   id UUID PRIMARY KEY,
   bill_id TEXT NOT NULL,
@@ -305,14 +307,14 @@ CREATE TABLE payment_confirmations (
 );
 ```
 
-### 1.15 用户支付地址（服务端）
+### 1.15 User Payment Addresses (Server)
 
-**来源**: Section 7.2 - 云服务数据
+**Source**: Section 7.2 - Cloud Service Data
 
-**描述**: 服务端存储的用户专属支付地址（HD 钱包派生）。
+**Description**: Server-side storage of user-specific payment addresses (HD wallet derived).
 
 ```sql
--- 用户支付地址（HD钱包派生）
+-- User Payment Addresses (HD Wallet Derived)
 CREATE TABLE user_payment_addresses (
   id UUID PRIMARY KEY,
   user_id TEXT NOT NULL,
@@ -329,13 +331,13 @@ CREATE TABLE user_payment_addresses (
 
 ---
 
-## 2. API 数据结构 (JSON)
+## 2. API Data Structures (JSON)
 
-### 2.1 收费规则同意数据
+### 2.1 Fee Agreement Data
 
-**来源**: Section 2.2 - 收费规则同意流程
+**Source**: Section 2.2 - Fee Agreement Flow
 
-**描述**: 客户端生成并上传到服务器的收费规则同意记录。
+**Description**: Fee agreement record generated by client and uploaded to server.
 
 ```json
 {
@@ -346,11 +348,11 @@ CREATE TABLE user_payment_addresses (
 }
 ```
 
-### 2.2 月度账单数据
+### 2.2 Monthly Bill Data
 
-**来源**: Section 2.3 - 月度计费流程
+**Source**: Section 2.3 - Monthly Billing Flow
 
-**描述**: 客户端本地生成的月度账单数据结构。
+**Description**: Monthly bill data structure generated locally by client.
 
 ```json
 {
@@ -364,11 +366,11 @@ CREATE TABLE user_payment_addresses (
 }
 ```
 
-### 2.3 账单上传数据结构
+### 2.3 Bill Upload Data Structure
 
-**来源**: Section 2.3 - 月度计费流程
+**Source**: Section 2.3 - Monthly Billing Flow
 
-**描述**: 用户确认后上传到服务器的账单摘要数据（不含交易明细）。
+**Description**: Bill summary data uploaded to server after user confirmation (without trade details).
 
 ```json
 {
@@ -386,11 +388,11 @@ CREATE TABLE user_payment_addresses (
 }
 ```
 
-### 2.4 风控规则配置
+### 2.4 Risk Control Config
 
-**来源**: Section 5.2 - 核心功能清单 (风控系统)
+**Source**: Section 5.2 - Core Features (Risk System)
 
-**描述**: 客户端风控系统的配置参数示例。
+**Description**: Client risk control system configuration parameters example.
 
 ```json
 {
@@ -422,11 +424,11 @@ CREATE TABLE user_payment_addresses (
 }
 ```
 
-### 2.5 日志格式
+### 2.5 Log Format
 
-**来源**: Section 13.2 - 日志规范
+**Source**: Section 13.2 - Logging Standards
 
-**描述**: 应用日志的标准 JSON 格式。
+**Description**: Standard JSON format for application logs.
 
 ```json
 {
@@ -447,33 +449,33 @@ CREATE TABLE user_payment_addresses (
 
 ---
 
-## 3. 客户端代码 (JavaScript/TypeScript)
+## 3. Client Code (JavaScript/TypeScript)
 
-### 3.1 高水位账单计算类
+### 3.1 High Watermark Billing Calculator
 
-**来源**: Section 8.2 - 高水位计算（本地）
+**Source**: Section 8.2 - High Watermark Calculation (Local)
 
-**描述**: 客户端本地计算月度账单和高水位的核心类。
+**Description**: Core class for calculating monthly bills and high watermarks locally on client.
 
 ```javascript
-// 客户端本地计算
+// Client-side local calculation
 class BillingCalculator {
   
   /**
-   * 计算月度账单
+   * Calculate monthly bill
    */
   calculateMonthlyBilling(month) {
-    // 1. 从本地数据库获取本月所有交易
+    // 1. Get all trades for this month from local database
     const trades = this.db.query(`
       SELECT * FROM trades 
       WHERE strftime('%Y-%m', timestamp) = ?
       ORDER BY timestamp
     `, [month]);
     
-    // 2. 计算累计利润
+    // 2. Calculate cumulative profit
     const cumulativeProfit = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
     
-    // 3. 获取历史高水位
+    // 3. Get historical high watermark
     const lastWatermark = this.db.queryOne(`
       SELECT high_watermark FROM watermarks 
       WHERE month < ? 
@@ -481,16 +483,16 @@ class BillingCalculator {
     `, [month]);
     const highWatermark = lastWatermark?.high_watermark || 0;
     
-    // 4. 计算可计费利润
+    // 4. Calculate billable profit
     const billableProfit = Math.max(0, cumulativeProfit - highWatermark);
     
-    // 5. 计算费用 (10%)
+    // 5. Calculate fee (10%)
     const fee = billableProfit * 0.10;
     
-    // 6. 更新高水位
+    // 6. Update high watermark
     const newHighWatermark = Math.max(highWatermark, cumulativeProfit);
     
-    // 7. 保存到本地数据库
+    // 7. Save to local database
     this.db.run(`
       INSERT OR REPLACE INTO watermarks 
       (month, starting_profit, ending_profit, high_watermark, billable_profit, fee_amount, status)
@@ -509,7 +511,7 @@ class BillingCalculator {
   }
   
   /**
-   * 获取所有历史账单
+   * Get all historical bills
    */
   getAllBillings() {
     return this.db.query(`
@@ -519,14 +521,14 @@ class BillingCalculator {
 }
 ```
 
-### 3.2 支付地址管理
+### 3.2 Payment Address Management
 
-**来源**: Section 9.4 - 支付地址管理
+**Source**: Section 9.4 - Payment Address Management
 
-**描述**: 固定收款地址配置和用户专属地址派生函数。
+**Description**: Fixed receiving address configuration and user-specific address derivation function.
 
 ```javascript
-// 固定收款地址（简单方案）
+// Fixed receiving addresses (simple approach)
 const PAYMENT_ADDRESSES = {
   'USDT-TRC20': 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
   'USDT-ERC20': '0x742d35Cc6634C0532925a3b844Bc9e7595f8bDe2',
@@ -534,23 +536,23 @@ const PAYMENT_ADDRESSES = {
   'USDC-ERC20': '0x742d35Cc6634C0532925a3b844Bc9e7595f8bDe2'
 };
 
-// 可选：用户专属地址（HD钱包派生）
+// Optional: User-specific addresses (HD wallet derivation)
 function getUserPaymentAddress(userId, currency, chain) {
-  // 使用主钱包的 xpub 派生子地址
+  // Derive child address using master wallet's xpub
   const path = `m/44'/${coinType}'/${userId}'/0/0`;
   const address = deriveAddress(masterXpub, path);
   return address;
 }
 ```
 
-### 3.3 服务端链上支付监控系统
+### 3.3 Server On-Chain Payment Monitoring System
 
-**来源**: Section 9.5 - 服务器链上监控（核心功能）
+**Source**: Section 9.5 - Server On-Chain Monitoring (Core Feature)
 
-**描述**: 服务端监控链上支付并自动核对的服务类。
+**Description**: Server-side service class for monitoring on-chain payments and automatic verification.
 
 ```javascript
-// 服务端链上监控系统
+// Server-side on-chain monitoring system
 class PaymentMonitor {
   
   constructor() {
@@ -559,16 +561,16 @@ class PaymentMonitor {
   }
   
   /**
-   * 启动监控任务
+   * Start monitoring task
    */
   async startMonitoring() {
     
-    // 使用 WebSocket 实时监听
+    // Use WebSocket for real-time listening
     this.startWebSocketListener();
   }
   
   /**
-   * 检查待确认支付
+   * Check pending payments
    */
   async checkPendingPayments() {
     const pendingOrders = await db.query(`
@@ -583,7 +585,7 @@ class PaymentMonitor {
   }
   
   /**
-   * 检查单个订单的支付情况
+   * Check payment for a single order
    */
   async checkOrderPayment(order) {
     const { payment_address, amount, currency, chain } = order;
@@ -601,7 +603,7 @@ class PaymentMonitor {
       );
     }
     
-    // 核对交易
+    // Verify transactions
     for (const tx of transactions) {
       if (this.verifyTransaction(tx, order)) {
         await this.confirmPayment(order, tx);
@@ -611,22 +613,22 @@ class PaymentMonitor {
   }
   
   /**
-   * 验证交易
+   * Verify transaction
    */
   verifyTransaction(tx, order) {
-    // 核对地址
+    // Verify address
     if (tx.to.toLowerCase() !== order.payment_address.toLowerCase()) {
       return false;
     }
     
-    // 核对金额（允许1%误差，应对精度问题）
+    // Verify amount (allow 1% tolerance for precision issues)
     const expectedAmount = order.amount;
     const actualAmount = parseFloat(tx.value) / 1e6;  // USDT 6 decimals
     if (actualAmount < expectedAmount * 0.99) {
       return false;
     }
     
-    // 核对确认数
+    // Verify confirmations
     if (tx.confirmations < MIN_CONFIRMATIONS) {
       return false;
     }
@@ -635,18 +637,18 @@ class PaymentMonitor {
   }
   
   /**
-   * 确认支付
+   * Confirm payment
    */
   async confirmPayment(order, tx) {
     await db.transaction(async (conn) => {
-      // 更新支付订单状态
+      // Update payment order status
       await conn.query(`
         UPDATE payment_orders 
         SET status = 'paid', paid_at = NOW()
         WHERE id = ?
       `, [order.id]);
       
-      // 记录支付详情
+      // Record payment details
       await conn.query(`
         INSERT INTO payment_confirmations 
         (bill_id, user_id, tx_hash, amount, currency, chain, 
@@ -656,14 +658,14 @@ class PaymentMonitor {
           tx.value / 1e6, order.currency, order.chain,
           tx.from, tx.to]);
       
-      // 更新账单状态
+      // Update bill status
       await conn.query(`
         UPDATE confirmed_bills 
         SET status = 'paid'
         WHERE bill_id = ?
       `, [order.bill_id]);
       
-      // 通知用户
+      // Notify user
       await this.notifyUser(order.user_id, {
         type: 'payment_confirmed',
         bill_id: order.bill_id,
@@ -674,27 +676,27 @@ class PaymentMonitor {
 }
 ```
 
-### 3.4 账单确认上传客户端
+### 3.4 Bill Confirmation Upload Client
 
-**来源**: Section 9.6 - 账单确认上传机制
+**Source**: Section 9.6 - Bill Confirmation Upload Mechanism
 
-**描述**: 客户端账单确认并上传到服务器的类。
+**Description**: Client-side class for bill confirmation and upload to server.
 
 ```javascript
-// 客户端账单确认上传
+// Client-side bill confirmation upload
 class BillingUploader {
   
   /**
-   * 用户确认账单并上传
+   * User confirms bill and uploads
    */
   async confirmAndUpload(monthBilling) {
-    // 1. 用户在界面上确认账单
+    // 1. User confirms bill on UI
     const userConfirmed = await this.showBillingConfirmation(monthBilling);
     if (!userConfirmed) {
       return { success: false, reason: 'user_cancelled' };
     }
     
-    // 2. 准备上传数据（不含交易明细）
+    // 2. Prepare upload data (without trade details)
     const uploadData = {
       bill_id: this.generateBillId(),
       user_id: this.getCurrentUserId(),
@@ -708,11 +710,11 @@ class BillingUploader {
       confirmed_at: new Date().toISOString()
     };
     
-    // 3. 生成客户端签名
+    // 3. Generate client signature
     const signature = this.signData(uploadData);
     uploadData.client_signature = signature;
     
-    // 4. 上传至服务器
+    // 4. Upload to server
     try {
       const response = await fetch('/api/billing/confirm', {
         method: 'POST',
@@ -723,7 +725,7 @@ class BillingUploader {
       const result = await response.json();
       
       if (result.success) {
-        // 5. 保存服务器返回的支付信息
+        // 5. Save payment info returned from server
         this.savePaymentInfo({
           bill_id: uploadData.bill_id,
           payment_address: result.payment_address,
@@ -738,14 +740,14 @@ class BillingUploader {
         return { success: false, reason: result.error };
       }
     } catch (error) {
-      // 网络失败，稍后重试
+      // Network failure, retry later
       this.queueForRetry(uploadData);
       return { success: false, reason: 'network_error' };
     }
   }
   
   /**
-   * 签名数据
+   * Sign data
    */
   signData(data) {
     const message = JSON.stringify(data);
@@ -756,24 +758,24 @@ class BillingUploader {
 }
 ```
 
-### 3.5 本地数据加密
+### 3.5 Local Data Encryption
 
-**来源**: Section 10.4 - 本地数据安全
+**Source**: Section 10.4 - Local Data Security
 
-**描述**: 客户端本地数据加密和解密的实现。
+**Description**: Client-side implementation of local data encryption and decryption.
 
 ```javascript
-// 本地数据加密
+// Local data encryption
 class LocalDataSecurity {
   
   /**
-   * 使用用户密码派生的密钥加密敏感数据
+   * Encrypt sensitive data using key derived from user password
    */
   encryptData(plaintext, userPassword) {
-    // 从密码派生密钥
+    // Derive key from password
     const key = this.deriveKey(userPassword);
     
-    // AES-256-GCM 加密
+    // AES-256-GCM encryption
     const nonce = crypto.randomBytes(12);
     const cipher = crypto.createCipheriv('aes-256-gcm', key, nonce);
     const encrypted = Buffer.concat([
@@ -790,7 +792,7 @@ class LocalDataSecurity {
   }
   
   /**
-   * 解密本地数据
+   * Decrypt local data
    */
   decryptData(encrypted, userPassword) {
     const key = this.deriveKey(userPassword);
@@ -812,20 +814,20 @@ class LocalDataSecurity {
 }
 ```
 
-### 3.6 客户端用户注册/登录
+### 3.6 Client User Registration/Login
 
-**来源**: Section 11.8 - 技术实现要点
+**Source**: Section 11.8 - Technical Implementation
 
-**描述**: Electron 客户端中嵌入用户认证的实现。
+**Description**: Implementation of embedded user authentication in Electron client.
 
 ```javascript
-// Electron 中嵌入用户注册/登录页面
+// Embedded user registration/login page in Electron
 async function openAuth(mode = 'login') {
-  // 打开认证窗口（内嵌浏览器）
+  // Open auth window (embedded browser)
   const authWindow = new BrowserWindow({
     width: 450,
     height: 600,
-    title: mode === 'login' ? '登录' : '注册',
+    title: mode === 'login' ? 'Login' : 'Register',
     resizable: false,
     webPreferences: {
       nodeIntegration: false,
@@ -833,51 +835,51 @@ async function openAuth(mode = 'login') {
     }
   });
   
-  // 加载认证页面（云端托管）
+  // Load auth page (cloud-hosted)
   authWindow.loadURL(`https://auth.quantagent.pro/${mode}`);
   
-  // 监听认证完成事件
+  // Listen for auth complete event
   ipcMain.on('auth-complete', async (event, result) => {
     if (result.success) {
-      // 保存用户信息到本地（不含敏感信息）
+      // Save user info locally (without sensitive info)
       await localDB.saveUserInfo({
         userId: result.userId,
         email: result.email,
-        supabaseKey: result.supabaseKey  // 服务端下发的 API Key
+        supabaseKey: result.supabaseKey  // Server-issued API Key
       });
       
-      // 通知渠道端绑定用户
+      // Notify channel to bind user
       await notifyChannelBinding(result.userId);
     }
     authWindow.close();
   });
   
-  // 监听窗口关闭
+  // Listen for window close
   authWindow.on('closed', () => {
     authWindow = null;
   });
 }
 
-// 检查登录状态
+// Check login status
 async function checkAuthStatus() {
   const userInfo = await localDB.getUserInfo();
   if (!userInfo) {
-    // 未登录，打开登录窗口
+    // Not logged in, open login window
     return openAuth('login');
   }
   
-  // 验证 Supabase Key 是否有效
+  // Verify if Supabase Key is valid
   const isValid = await verifySupabaseKey(userInfo.supabaseKey);
   if (!isValid) {
-    // Key 已失效（可能逾期未支付），提示用户
+    // Key invalid (possibly overdue payment), notify user
     dialog.showMessageBox({
       type: 'warning',
-      title: '账户状态异常',
-      message: '您的账户可能已逾期，请检查支付状态',
-      buttons: ['查看账单', '稍后处理']
+      title: 'Account Status Abnormal',
+      message: 'Your account may be overdue, please check payment status',
+      buttons: ['View Bill', 'Later']
     }).then(result => {
       if (result.response === 0) {
-        // 引导用户到渠道端查看账单
+        // Guide user to channel to view bill
         shell.openExternal('https://t.me/quantagent_bot');
       }
     });
@@ -887,58 +889,57 @@ async function checkAuthStatus() {
 }
 ```
 
-### 3.7 离线优先数据同步
+### 3.7 Offline-First Data Sync
 
-**来源**: Section 11.8 - 技术实现要点
+**Source**: Section 11.8 - Technical Implementation
 
-**描述**: 客户端数据同步策略，支持离线使用。
+**Description**: Client data sync strategy supporting offline usage.
 
 ```javascript
-// 数据同步策略
+// Data sync strategy
 class DataSync {
   async syncBillingData() {
     if (!navigator.onLine) {
-      // 离线时使用本地缓存
+      // Use local cache when offline
       return await localDB.getBillingData();
     }
     
     try {
-      // 在线时同步云端数据
+      // Sync cloud data when online
       const cloudData = await api.fetchBillingData();
       await localDB.saveBillingData(cloudData);
       return cloudData;
     } catch (error) {
-      // 网络失败时降级到本地
+      // Fallback to local on network failure
       return await localDB.getBillingData();
     }
   }
 }
 ```
 
-### 3.8 支付确认客户端
+### 3.8 Payment Confirmation Client
 
-**来源**: Section 10.5 - 支付确认安全
+**Source**: Section 10.5 - Payment Confirmation Security
 
-**描述**: 客户端支付确认和链上验证的实现。
+**Description**: Client-side implementation of payment confirmation and on-chain verification.
 
 ```javascript
-// 客户端支付确认
+// Client-side payment confirmation
 class PaymentConfirmation {
   
-
   async confirmPayment(month, txHash) {
        
-    // 1. 验证链上交易
+    // 1. Verify on-chain transaction
     const verified = await this.verifyOnChain(txHash, month);
     
-    // 2. 更新本地订单状态
+    // 2. Update local order status
     this.db.run(`
       UPDATE watermarks 
       SET status = 'paid', paid_at = ?, tx_hash = ?, verified = ?
       WHERE month = ?
     `, [new Date().toISOString(), txHash, verified, month]);
     
-    // 3. 通知服务端
+    // 3. Notify server
     if (verified) {
       await this.notifyServer(month, txHash);
     }
@@ -947,19 +948,19 @@ class PaymentConfirmation {
   }
   
   /**
-   * 链上验证
+   * On-chain verification
    */
   async verifyOnChain(txHash, month) {
     try {
-      // 使用公共 API 查询交易
+      // Query transaction using public API
       const tx = await this.fetchTransaction(txHash);
       const bill = this.getBilling(month);
       
-      // 验证金额和收款地址
+      // Verify amount and receiving address
       return tx.to === PAYMENT_ADDRESS && 
              tx.value >= bill.fee_amount * 1e6;
     } catch {
-      // 验证失败不影响用户标记为已支付
+      // Verification failure doesn't prevent user from marking as paid
       return false;
     }
   }
@@ -968,19 +969,19 @@ class PaymentConfirmation {
 
 ---
 
-## 4. 后端代码 (Python)
+## 4. Backend Code (Python)
 
-### 4.1 OpenClaw-Freqtrade 桥接层
+### 4.1 OpenClaw-Freqtrade Bridge Layer
 
-**来源**: Section 5.2 - OpenClaw 与 Freqtrade 集成
+**Source**: Section 5.2 - OpenClaw & Freqtrade Integration
 
-**描述**: OpenClaw 智能体与 Freqtrade 量化引擎的集成接口。
+**Description**: Integration interface between OpenClaw agent and Freqtrade quant engine.
 
 ```python
-# 集成层 API (Python)
+# Integration Layer API (Python)
 
 class OpenClawFreqtradeBridge:
-    """OpenClaw 与 Freqtrade 的桥接层"""
+    """Bridge layer between OpenClaw and Freqtrade"""
     
     def __init__(self, freqtrade_path: str, config_path: str):
         self.freqtrade_path = freqtrade_path
@@ -988,67 +989,67 @@ class OpenClawFreqtradeBridge:
     
     async def create_strategy(self, natural_language: str) -> str:
         """
-        将自然语言转换为 Freqtrade 策略代码
+        Convert natural language to Freqtrade strategy code
         
         Args:
-            natural_language: 用户描述的策略逻辑
+            natural_language: User-described strategy logic
             
         Returns:
-            生成的策略文件路径
+            Generated strategy file path
         """
-        # 1. 调用 OpenClaw 理解用户意图
-        # 2. 生成 Freqtrade 策略代码
-        # 3. 保存到 user_data/strategies/
-        # 4. 验证策略语法
+        # 1. Call OpenClaw to understand user intent
+        # 2. Generate Freqtrade strategy code
+        # 3. Save to user_data/strategies/
+        # 4. Validate strategy syntax
         pass
     
     async def run_backtest(self, strategy: str, 
                           timerange: str,
                           stake_amount: float) -> BacktestResult:
         """
-        执行回测并返回结果
+        Execute backtest and return results
         
         Args:
-            strategy: 策略名称
-            timerange: 时间范围 (如 "20240101-20241231")
-            stake_amount: 每笔交易金额
+            strategy: Strategy name
+            timerange: Time range (e.g., "20240101-20241231")
+            stake_amount: Stake amount per trade
             
         Returns:
-            回测结果对象
+            Backtest result object
         """
-        # 1. 调用 freqtrade backtesting
-        # 2. 解析结果 JSON
-        # 3. 返回结构化数据
+        # 1. Call freqtrade backtesting
+        # 2. Parse result JSON
+        # 3. Return structured data
         pass
     
     async def start_trading(self, strategy: str, 
                            dry_run: bool = True) -> str:
         """
-        启动实盘/模拟交易
+        Start live/paper trading
         
         Args:
-            strategy: 策略名称
-            dry_run: 是否模拟模式
+            strategy: Strategy name
+            dry_run: Whether paper trading mode
             
         Returns:
-            进程 ID
+            Process ID
         """
         pass
     
     async def get_trade_status(self) -> TradeStatus:
-        """获取当前交易状态"""
+        """Get current trading status"""
         pass
     
     async def stop_trading(self) -> bool:
-        """停止交易"""
+        """Stop trading"""
         pass
 ```
 
-### 4.2 密钥管理器
+### 4.2 Key Manager
 
-**来源**: Section 10.3 - 密钥管理方案
+**Source**: Section 10.3 - Key Management Scheme
 
-**描述**: 服务端密钥派生和 API Key 加密解密的实现。
+**Description**: Server-side implementation of key derivation and API key encryption/decryption.
 
 ```python
 import hashlib
@@ -1058,7 +1059,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 class KeyManager:
-    """密钥管理器"""
+    """Key Manager"""
     
     ITERATIONS = 100000
     KEY_LENGTH = 32  # 256 bits
@@ -1066,14 +1067,14 @@ class KeyManager:
     @staticmethod
     def derive_master_key(password: str, salt: bytes) -> bytes:
         """
-        从用户密码派生主密钥
+        Derive master key from user password
         
         Args:
-            password: 用户密码
-            salt: 随机盐值 (存储在服务端)
+            password: User password
+            salt: Random salt value (stored on server)
             
         Returns:
-            256-bit 主密钥
+            256-bit master key
         """
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
@@ -1086,13 +1087,13 @@ class KeyManager:
     @staticmethod
     def encrypt_api_key(api_key: str, master_key: bytes) -> dict:
         """
-        加密 API Key
+        Encrypt API Key
         
         Returns:
             {
-                'ciphertext': base64编码的密文,
-                'nonce': base64编码的随机数,
-                'tag': base64编码的认证标签
+                'ciphertext': base64-encoded ciphertext,
+                'nonce': base64-encoded nonce,
+                'tag': base64-encoded auth tag
             }
         """
         nonce = os.urandom(12)  # 96-bit nonce for GCM
@@ -1111,7 +1112,7 @@ class KeyManager:
     
     @staticmethod
     def decrypt_api_key(encrypted: dict, master_key: bytes) -> str:
-        """解密 API Key"""
+        """Decrypt API Key"""
         nonce = base64.b64decode(encrypted['nonce'])
         ciphertext = base64.b64decode(encrypted['ciphertext'])
         
@@ -1121,21 +1122,21 @@ class KeyManager:
         return plaintext.decode()
 ```
 
-### 4.3 服务端账单确认接口
+### 4.3 Server Bill Confirmation API
 
-**来源**: Section 9.6 - 账单确认上传机制
+**Source**: Section 9.6 - Bill Confirmation Upload Mechanism
 
-**描述**: 服务端接收和处理用户确认账单的 API 接口。
+**Description**: Server API endpoint for receiving and processing user-confirmed bills.
 
 ```python
-# 服务端账单确认接口
+# Server bill confirmation API
 @router.post('/api/billing/confirm')
 async def confirm_billing(request: BillingConfirmRequest):
-    # 1. 验证签名
+    # 1. Verify signature
     if not verify_client_signature(request.dict(), request.client_signature):
         raise HTTPException(400, 'Invalid signature')
     
-    # 2. 检查是否已确认
+    # 2. Check if already confirmed
     existing = await db.fetch_one(
         'SELECT id FROM confirmed_bills WHERE user_id = ? AND month = ?',
         request.user_id, request.month
@@ -1143,13 +1144,13 @@ async def confirm_billing(request: BillingConfirmRequest):
     if existing:
         raise HTTPException(400, 'Bill already confirmed')
     
-    # 3. 生成支付地址
+    # 3. Generate payment address
     payment_address = await generate_payment_address(
         request.user_id, 
         request.currency
     )
     
-    # 4. 保存账单
+    # 4. Save bill
     await db.execute('''
         INSERT INTO confirmed_bills 
         (bill_id, user_id, month, cumulative_profit, high_watermark, 
@@ -1160,7 +1161,7 @@ async def confirm_billing(request: BillingConfirmRequest):
          request.billable_profit, request.fee_amount, request.currency,
          request.confirmed_at, request.client_signature)
     
-    # 5. 创建支付订单
+    # 5. Create payment order
     await db.execute('''
         INSERT INTO payment_orders 
         (bill_id, user_id, amount, currency, chain, payment_address, status, expires_at)
@@ -1178,21 +1179,21 @@ async def confirm_billing(request: BillingConfirmRequest):
     }
 ```
 
-### 4.4 高水位计算单元测试
+### 4.4 High Watermark Calculation Unit Tests
 
-**来源**: Section 13.2 - 单元测试
+**Source**: Section 13.2 - Unit Testing
 
-**描述**: 高水位计算逻辑的单元测试用例。
+**Description**: Unit test cases for high watermark calculation logic.
 
 ```python
-# 示例: 高水位计算单元测试
+# Example: High watermark calculation unit tests
 import pytest
 from datetime import datetime
 
 class TestHighWatermark:
     
     def test_first_month_profit(self):
-        """首月盈利: 全部计费"""
+        """First month profit: all billable"""
         result = calculate_billing(
             cumulative_profit=500,
             previous_high_watermark=0
@@ -1202,17 +1203,17 @@ class TestHighWatermark:
         assert result['new_high_watermark'] == 500
     
     def test_below_high_watermark(self):
-        """低于高水位: 不计费"""
+        """Below high watermark: no billing"""
         result = calculate_billing(
             cumulative_profit=300,
             previous_high_watermark=500
         )
         assert result['billable'] == 0
         assert result['fee'] == 0
-        assert result['new_high_watermark'] == 500  # 保持不变
+        assert result['new_high_watermark'] == 500  # Unchanged
     
     def test_exceed_high_watermark(self):
-        """超过高水位: 只计费超出部分"""
+        """Exceed high watermark: only bill excess"""
         result = calculate_billing(
             cumulative_profit=700,
             previous_high_watermark=500
@@ -1222,7 +1223,7 @@ class TestHighWatermark:
         assert result['new_high_watermark'] == 700
     
     def test_negative_profit(self):
-        """亏损情况: 不计费"""
+        """Loss situation: no billing"""
         result = calculate_billing(
             cumulative_profit=-100,
             previous_high_watermark=500
@@ -1234,13 +1235,13 @@ class TestHighWatermark:
 
 ---
 
-## 5. 配置文件 (JSON)
+## 5. Configuration Files (YAML)
 
-### 5.1 CI/CD 发布流程
+### 5.1 CI/CD Release Pipeline
 
-**来源**: Section 17.4 - CI/CD 流程
+**Source**: Section 17.4 - CI/CD Flow
 
-**描述**: GitHub Actions 自动化构建和发布配置。
+**Description**: GitHub Actions automated build and release configuration.
 
 ```yaml
 # .github/workflows/release.yml
@@ -1272,32 +1273,32 @@ jobs:
           aws s3 sync dist/ s3://quantagent-releases/
 ```
 
-### 4.5 自动更新 API
+### 4.5 Auto-Update API
 
-**来源**: Section 8.2 - 自动更新机制
+**Source**: Section 8.2 - Auto-Update Mechanism
 
-**描述**: 客户端检查和下载软件更新的 API 接口。
+**Description**: Client API for checking and downloading software updates.
 
 ```typescript
-// 检查更新 API
+// Check Update API
 // GET /api/updates/check?version=1.0.0&platform=darwin
 
 interface UpdateCheckResponse {
   hasUpdate: boolean;
   latestVersion: string;
-  forceUpdate: boolean;  // 是否强制更新
-  releaseNotes: string;  // Markdown 格式的更新说明
-  downloadUrl: string;   // 下载地址
-  fileSize: number;      // 文件大小 (bytes)
-  checksum: string;      // SHA256 校验和
+  forceUpdate: boolean;  // Force update required
+  releaseNotes: string;  // Markdown release notes
+  downloadUrl: string;   // Download URL
+  fileSize: number;      // File size (bytes)
+  checksum: string;      // SHA256 checksum
 }
 
-// 示例响应
+// Example response
 const response: UpdateCheckResponse = {
   hasUpdate: true,
   latestVersion: "1.2.0",
   forceUpdate: false,
-  releaseNotes: "### 新功能\n- 新增 ETH 策略\n- 优化性能",
+  releaseNotes: "### New Features\n- Added ETH strategy\n- Performance optimization",
   downloadUrl: "/api/updates/download/v1.2.0/darwin",
   fileSize: 125829120,
   checksum: "sha256:abc123..."
@@ -1306,198 +1307,199 @@ const response: UpdateCheckResponse = {
 
 ---
 
-## 6. 架构图 (ASCII Art)
+## 6. Architecture Diagrams (ASCII Art)
 
-### 6.1 功能架构图
+### 6.1 Functional Architecture
 
-**来源**: Section 5.1 - 功能架构
+**Source**: Section 5.1 - Functional Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    用户交互层                                   │
+│                    User Interaction Layer                       │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │                 对话渠道 (核心交互)                       │   │
+│  │              Chat Channels (Core Interaction)            │   │
 │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │   │
 │  │  │  Telegram   │  │  WhatsApp   │  │   Web Chat  │      │   │
-│  │  │  (主要)     │  │  (主要)     │  │   (备选)    │      │   │
+│  │  │  (Primary)  │  │  (Primary)  │  │  (Backup)   │      │   │
 │  │  └─────────────┘  └─────────────┘  └─────────────┘      │   │
 │  │                                                         │   │
-│  │  通过对话完成：                                          │   │
-│  │  ✅ 策略编写、数据下载、策略回测                         │   │
-│  │  ✅ 模拟交易、实盘交易、交易监控                         │   │
-│  │  ✅ 账单对账、计算收费、确认收费                         │   │
-│  │  ✅ 二维码支付、支付状态查询                             │   │
-│  │  ✅ 风控通知、交易提醒                                   │   │
+│  │  Complete via Chat:                                      │   │
+│  │  ✅ Strategy writing, data download, backtesting         │   │
+│  │  ✅ Paper trading, live trading, monitoring              │   │
+│  │  ✅ Billing reconciliation, fee calculation              │   │
+│  │  ✅ QR code payment, payment status                      │   │
+│  │  ✅ Risk alerts, trade notifications                     │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                              ↓                                  │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │              桌面客户端 (仅敏感信息管理)                  │   │
+│  │          Desktop Client (Sensitive Info Only)            │   │
 │  │  ┌─────────────┐  ┌─────────────┐                       │   │
 │  │  │   macOS    │  │   Linux    │                        │   │
 │  │  │ (Electron) │  │ (Electron) │                        │   │
 │  │  └─────────────┘  └─────────────┘                       │   │
 │  │                                                         │   │
-│  │  仅管理敏感信息（本地加密存储，永不上传）：               │   │
-│  │  🔐 大模型 API Key (OpenAI/Claude/本地)                 │   │
-│  │  🔐 交易所 API Key (Binance/OKX)                        │   │
-│  │  🔐 用户主密钥（用于本地数据加密）                       │   │
+│  │  Manage Sensitive Info Only (Local Encrypted, Never Upload):│
+│  │  🔐 LLM API Keys (OpenAI/Claude/Local)                  │   │
+│  │  🔐 Exchange API Keys (Binance/OKX)                     │   │
+│  │  🔐 User Master Key (for local data encryption)         │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│                    后端服务层                                   │
+│                    Backend Service Layer                        │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │                    智能体系统 (OpenClaw)                  │   │
+│  │              Agent System (OpenClaw)                     │   │
 │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │   │
-│  │  │ 对话路由    │  │ 意图识别   │  │ 任务执行   │        │   │
+│  │  │ Dialog Route│  │ Intent Rec  │  │Task Executor│      │   │
 │  │  └─────────────┘  └─────────────┘  └─────────────┘      │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                              ↓                                  │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │                  量化引擎 (Freqtrade)                     │   │
+│  │              Quant Engine (Freqtrade)                    │   │
 │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │   │
-│  │  │ 数据下载   │  │ 策略回测   │  │ 实盘交易   │        │   │
+│  │  │Data Download│  │  Backtest   │  │Live Trading │      │   │
 │  │  └─────────────┘  └─────────────┘  └─────────────┘      │   │
 │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │   │
-│  │  │ 参数优化   │  │ 风险分析   │  │ 账单计算   │        │   │
+│  │  │Param Optimize│  │Risk Analysis│  │Bill Calc   │      │   │
 │  │  └─────────────┘  └─────────────┘  └─────────────┘      │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                              ↓                                  │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │                    本地服务 (全部离线可用)                │   │
+│  │              Local Services (All Offline)                │   │
 │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │   │
-│  │  │ 本地存储   │  │ 高水位计算 │  │ 账单生成   │        │   │
+│  │  │Local Storage│  │High Watermark│  │Bill Generate│     │   │
 │  │  └─────────────┘  └─────────────┘  └─────────────┘      │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
                               ↕
 ┌─────────────────────────────────────────────────────────────────┐
-│                    CryptoClaw 云服务                         │
+│                    CryptoClaw Cloud Services                    │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
-│  │ 收费规则存档│  │ 账单确认   │  │ 支付监控   │               │
+│  │Fee Agreement│  │Bill Confirm │  │Pay Monitor  │              │
+│  │   Archive   │  │             │  │             │              │
 │  └─────────────┘  └─────────────┘  └─────────────┘              │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
-│  │ 用户认证   │  │ 消息推送   │  │ 软件更新   │               │
+│  │User Auth    │  │Push Notify  │  │SW Updates   │              │
 │  └─────────────┘  └─────────────┘  └─────────────┘              │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 6.2 高水位机制图
+### 6.2 High Watermark Mechanism
 
-**来源**: Section 2.2 - 分润计费模型
+**Source**: Section 2.2 - Profit Sharing Model
 
 ```
-高水位原理：
+High Watermark Principle:
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
-│  利润曲线                                                   │
-│     ╭─────╮        ╭──────────────╮ ← 当前高水位          │
+│  Profit Curve                                               │
+│     ╭─────╮        ╭──────────────╮ ← Current High Watermark│
 │    ╱       ╲      ╱                ╲                        │
 │   ╱         ╲____╱                  ╲                       │
-│  ╱                                    ╲ ← 当前利润          │
+│  ╱                                    ╲ ← Current Profit    │
 │ ╱                                      ╲                    │
 │─────────────────────────────────────────────────────────────│
 │                                                             │
-│  计费基础 = max(0, 当前累计利润 - 历史最高累计利润)         │
-│  应付费用 = 计费基础 × 10%                                  │
+│  Billing Base = max(0, Cumulative Profit - Historical High) │
+│  Fee Payable = Billing Base × 10%                           │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 6.3 安全架构图
+### 6.3 Security Architecture
 
-**来源**: Section 10.1 - 安全架构
+**Source**: Section 10.1 - Security Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                       安全层级                               │
+│                     Security Layers                          │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  Layer 1: 传输安全                                          │
-│  ├─ 所有通信使用 HTTPS (TLS 1.3)                           │
-│  ├─ 证书固定 (Certificate Pinning)                         │
-│  └─ API 请求签名验证                                        │
+│  Layer 1: Transport Security                                │
+│  ├─ All communications use HTTPS (TLS 1.3)                 │
+│  ├─ Certificate Pinning                                     │
+│  └─ API request signature verification                     │
 │                                                             │
-│  Layer 2: 认证授权                                          │
-│  ├─ JWT Token 认证                                          │
-│  ├─ Refresh Token 机制                                      │
-│  ├─ 设备绑定 (可选)                                         │
-│  └─ 多因素认证 (可选)                                       │
+│  Layer 2: Authentication & Authorization                    │
+│  ├─ JWT Token authentication                                │
+│  ├─ Refresh Token mechanism                                 │
+│  ├─ Device binding (optional)                               │
+│  └─ Multi-factor auth (optional)                            │
 │                                                             │
-│  Layer 3: 数据加密                                          │
-│  ├─ 敏感数据 AES-256-GCM 加密                               │
-│  ├─ 密钥派生 PBKDF2 (100,000 iterations)                   │
-│  ├─ 本地存储加密 (SQLite 加密)                              │
-│  └─ 内存安全 (敏感数据用后即焚)                             │
+│  Layer 3: Data Encryption                                   │
+│  ├─ Sensitive data AES-256-GCM encrypted                    │
+│  ├─ Key derivation PBKDF2 (100,000 iterations)              │
+│  ├─ Local storage encryption (SQLite encrypted)             │
+│  └─ Memory safety (sensitive data zeroed after use)         │
 │                                                             │
-│  Layer 4: 业务安全                                          │
-│  ├─ 交易上报 HMAC 签名                                      │
-│  ├─ 防重放攻击 (Nonce + Timestamp)                         │
-│  ├─ 速率限制                                                │
-│  └─ 审计日志                                                │
+│  Layer 4: Business Security                                 │
+│  ├─ Trade report HMAC signature                             │
+│  ├─ Replay attack prevention (Nonce + Timestamp)            │
+│  ├─ Rate limiting                                           │
+│  └─ Audit logs                                              │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 6.4 密钥层次结构图
+### 6.4 Key Hierarchy
 
-**来源**: Section 10.3 - 密钥管理方案
+**Source**: Section 10.3 - Key Management Scheme
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     密钥层次结构                             │
+│                     Key Hierarchy                            │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  Level 0: 主密钥 (Master Key)                               │
-│  ├─ 由用户密码派生 (PBKDF2)                                 │
-│  ├─ 不存储，每次从用户密码重新派生                          │
-│  └─ 用于加密 Level 1 密钥                                   │
+│  Level 0: Master Key                                        │
+│  ├─ Derived from user password (PBKDF2)                     │
+│  ├─ Not stored, re-derived from password each time          │
+│  └─ Used to encrypt Level 1 keys                            │
 │                                                             │
-│  Level 1: 数据加密密钥 (DEK)                                │
-│  ├─ 每个用户一个唯一 DEK                                    │
-│  ├─ 由主密钥加密后存储                                      │
-│  └─ 用于加密实际数据                                        │
+│  Level 1: Data Encryption Key (DEK)                         │
+│  ├─ One unique DEK per user                                 │
+│  ├─ Stored encrypted by master key                          │
+│  └─ Used to encrypt actual data                             │
 │                                                             │
-│  Level 1.5: Supabase Key（服务端下发）                      │
-│  ├─ 用户注册/登录后由服务端下发                             │
-│  ├─ 用于访问 Supabase 服务                                  │
-│  │   • 下载每日交易信号（BTC/ETH 策略）                     │
-│  │   • 上传收费规则同意记录                                 │
-│  │   • 上传用户确认的账单数据                               │
-│  ├─ 存储在客户端本地（加密）                                │
-│  ├─ 逾期未支付时服务端禁用该 Key                            │
-│  └─ 支付后服务端重新启用该 Key                              │
+│  Level 1.5: Supabase Key (Server-issued)                    │
+│  ├─ Issued by server after user registration/login          │
+│  ├─ Used to access Supabase services                        │
+│  │   • Download daily trading signals (BTC/ETH strategies)  │
+│  │   • Upload fee rule agreement records                    │
+│  │   • Upload user-confirmed bill data                      │
+│  ├─ Stored locally on client (encrypted)                    │
+│  ├─ Server disables key when user overdue on payment        │
+│  └─ Server re-enables key after payment                     │
 │                                                             │
-│  Level 2: 通信密钥                                          │
-│  ├─ HMAC 密钥: 用于请求签名                                 │
-│  ├─ Session 密钥: JWT 签名                                  │
-│  └─ 定期轮换                                                │
+│  Level 2: Communication Keys                                │
+│  ├─ HMAC Key: For request signing                           │
+│  ├─ Session Key: JWT signing                                │
+│  └─ Periodic rotation                                        │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 6.5 测试金字塔
+### 6.5 Testing Pyramid
 
-**来源**: Section 13.1 - 测试层级
+**Source**: Section 13.1 - Testing Layers
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                       测试金字塔                             │
+│                     Testing Pyramid                          │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │                     ╱╲                                      │
 │                    ╱  ╲                                     │
 │                   ╱ E2E╲          10%                       │
 │                  ╱──────╲                                   │
-│                 ╱ 集成测试 ╲       20%                       │
-│                ╱──────────╲                                 │
-│               ╱   单元测试   ╲     70%                       │
+│                 ╱Integration╲     20%                       │
+│                ╱────────────╲                               │
+│               ╱  Unit Tests  ╲    70%                       │
 │              ╱────────────────╲                             │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
@@ -1505,13 +1507,13 @@ const response: UpdateCheckResponse = {
 
 ---
 
-## 7. 部署配置 (YAML)
+## 7. Deployment Configuration (YAML)
 
-### 7.1 CI/CD 发布流程
+### 7.1 CI/CD Release Pipeline
 
-**来源**: Section 17.4 - CI/CD 流程
+**Source**: Section 17.4 - CI/CD Flow
 
-**描述**: GitHub Actions 自动化构建和发布配置。
+**Description**: GitHub Actions automated build and release configuration.
 
 ```yaml
 # .github/workflows/release.yml
@@ -1545,76 +1547,66 @@ jobs:
 
 ---
 
-## 更新日志
-
-| 日期 | 版本 | 说明 |
-|------|------|------|
-| 2026-03-17 | v1.0 | 从 requirement.md v6.0 提取所有代码块 |
-| 2026-03-18 | v1.1 | 补充更新 API、架构图、部署配置 |
-| 2026-03-18 | v1.2 | 从 design.md 迁移安装部署代码 |
-
----
-
-## 8. Docker 镜像与部署配置
+## 8. Docker Image & Deployment Configuration
 
 ### 8.1 Dockerfile
 
-**来源**: design.md Section 6.2.1
+**Source**: design_en.md Section 6.2.1
 
-**描述**: CryptoClaw Docker 镜像构建文件。
+**Description**: CryptoClaw Docker image build file.
 
 ```dockerfile
 # Dockerfile
 FROM python:3.11-slim
 
-# 安装 Node.js (OpenClaw 依赖)
+# Install Node.js (OpenClaw dependency)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs
 
-# 安装 Freqtrade
+# Install Freqtrade
 RUN pip install freqtrade
 
-# 安装 OpenClaw
+# Install OpenClaw
 RUN npm install -g openclaw
 
-# 创建工作目录
+# Create working directory
 WORKDIR /app
 
-# 复制配置模板
+# Copy configuration templates
 COPY user_data/ /app/user_data/
 COPY workspace/ /app/workspace/
 
-# 数据卷挂载点
+# Data volume mount points
 VOLUME ["/app/user_data", "/app/workspace", "/app/logs"]
 
-# 启动脚本
+# Startup script
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 ```
 
-### 8.2 一键安装脚本 (macOS/Linux)
+### 8.2 One-Click Install Script (macOS/Linux)
 
-**来源**: design.md Section 6.2.2
+**Source**: design_en.md Section 6.2.2
 
 ```bash
 #!/bin/bash
-# install.sh - CryptoClaw 一键安装脚本
+# install.sh - CryptoClaw one-click installer
 
 set -e
 
-echo "🚀 CryptoClaw 安装程序"
+echo "🚀 CryptoClaw Installer"
 echo "========================"
 
-# 检查 Docker
+# Check Docker
 if ! command -v docker &> /dev/null; then
-    echo "❌ 未检测到 Docker，正在安装..."
+    echo "❌ Docker not detected, installing..."
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS
         if command -v brew &> /dev/null; then
             brew install --cask docker
         else
-            echo "请先安装 Homebrew: https://brew.sh"
+            echo "Please install Homebrew first: https://brew.sh"
             exit 1
         fi
     elif [[ "$OSTYPE" == "linux"* ]]; then
@@ -1624,87 +1616,87 @@ if ! command -v docker &> /dev/null; then
     fi
 fi
 
-# 拉取镜像
-echo "📦 正在下载 CryptoClaw 镜像..."
+# Pull image
+echo "📦 Downloading CryptoClaw image..."
 docker pull cryptoclaw/cryptoclaw:latest
 
-# 创建目录结构
-echo "📁 创建工作目录..."
+# Create directory structure
+echo "📁 Creating working directories..."
 mkdir -p ~/.cryptoclaw/{user_data,workspace,logs,config}
 
-# 下载配置模板
+# Download config template
 if [ ! -f ~/.cryptoclaw/user_data/config.json ]; then
-    echo "⚙️  下载配置模板..."
+    echo "⚙️  Downloading config template..."
     curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoClaw/main/templates/config.json \
         -o ~/.cryptoclaw/user_data/config.json
 fi
 
-# 创建启动脚本
+# Create start script
 cat > ~/.cryptoclaw/start.sh << 'EOF'
 #!/bin/bash
 cd ~/.cryptoclaw
 docker-compose up -d
-echo "✅ CryptoClaw 已启动"
-echo "📱 访问 Telegram 搜索您的 Bot 开始使用"
+echo "✅ CryptoClaw started"
+echo "📱 Visit Telegram and search your bot to get started"
 EOF
 chmod +x ~/.cryptoclaw/start.sh
 
-# 创建停止脚本
+# Create stop script
 cat > ~/.cryptoclaw/stop.sh << 'EOF'
 #!/bin/bash
 cd ~/.cryptoclaw
 docker-compose down
-echo "🛑 CryptoClaw 已停止"
+echo "🛑 CryptoClaw stopped"
 EOF
 chmod +x ~/.cryptoclaw/stop.sh
 
 echo ""
-echo "✅ 安装完成！"
+echo "✅ Installation complete!"
 echo ""
-echo "使用方法："
-echo "  启动: ~/.cryptoclaw/start.sh"
-echo "  停止: ~/.cryptoclaw/stop.sh"
-echo "  配置: ~/.cryptoclaw/config/"
+echo "Usage:"
+echo "  Start: ~/.cryptoclaw/start.sh"
+echo "  Stop:  ~/.cryptoclaw/stop.sh"
+echo "  Config: ~/.cryptoclaw/config/"
 echo ""
 ```
 
-### 8.3 一键安装脚本 (Windows PowerShell)
+### 8.3 One-Click Install Script (Windows PowerShell)
 
-**来源**: design.md Section 6.2.2
+**Source**: design_en.md Section 6.2.2
 
 ```powershell
 # install.ps1
-Write-Host "🚀 CryptoClaw 安装程序" -ForegroundColor Green
+Write-Host "🚀 CryptoClaw Installer" -ForegroundColor Green
 
-# 检查 Docker
+# Check Docker
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-    Write-Host "❌ 未检测到 Docker Desktop" -ForegroundColor Red
-    Write-Host "请先安装: https://www.docker.com/products/docker-desktop" -ForegroundColor Yellow
+    Write-Host "❌ Docker Desktop not detected" -ForegroundColor Red
+    Write-Host "Please install first: https://www.docker.com/products/docker-desktop" -ForegroundColor Yellow
     exit 1
 }
 
-# 拉取镜像
-Write-Host "📦 正在下载 CryptoClaw 镜像..." -ForegroundColor Cyan
+# Pull image
+Write-Host "📦 Downloading CryptoClaw image..." -ForegroundColor Cyan
 docker pull cryptoclaw/cryptoclaw:latest
 
-# 创建目录
+# Create directories
 $cryptoclawDir = "$env:USERPROFILE\.cryptoclaw"
 New-Item -ItemType Directory -Force -Path "$cryptoclawDir\user_data"
 New-Item -ItemType Directory -Force -Path "$cryptoclawDir\workspace"
 New-Item -ItemType Directory -Force -Path "$cryptoclawDir\logs"
 New-Item -ItemType Directory -Force -Path "$cryptoclawDir\config"
 
-# 下载配置模板
+# Download config template
 $configUrl = "https://raw.githubusercontent.com/franklili3/CryptoClaw/main/templates/config.json"
 Invoke-WebRequest -Uri $configUrl -OutFile "$cryptoclawDir\user_data\config.json"
 
-Write-Host "✅ 安装完成！" -ForegroundColor Green
-Write-Host "运行命令启动: docker-compose -f $cryptoclawDir\config\docker-compose.yml up -d"
+Write-Host "✅ Installation complete!" -ForegroundColor Green
+Write-Host "Run to start: docker-compose -f $cryptoclawDir\config\docker-compose.yml up -d"
 ```
 
-### 8.4 Docker Compose 配置
+### 8.4 Docker Compose Configuration
 
-**来源**: design.md Section 6.2.3 & 6.2.4
+**Source**: design_en.md Section 6.2.3 & 6.2.4
 
 ```yaml
 # docker-compose.yml
@@ -1717,20 +1709,20 @@ services:
     restart: unless-stopped
     
     volumes:
-      # Freqtrade 数据目录
+      # Freqtrade data directory
       - ~/.cryptoclaw/user_data:/app/user_data
-      # OpenClaw 工作区
+      # OpenClaw workspace
       - ~/.cryptoclaw/workspace:/app/workspace
-      # 日志
+      # Logs
       - ~/.cryptoclaw/logs:/app/logs
-      # OpenClaw 配置
+      # OpenClaw config
       - ~/.cryptoclaw/config/openclaw.yaml:/app/config/openclaw.yaml:ro
     
     ports:
-      - "8080:8080"  # API Server (可选)
+      - "8080:8080"  # API Server (optional)
     
     env_file:
-      # 从 .env 文件加载环境变量
+      # Load env vars from .env file
       - ~/.cryptoclaw/config/.env
     
     environment:
@@ -1739,156 +1731,156 @@ services:
       - OPENCLAW_CONFIG=/app/config/openclaw.yaml
 ```
 
-### 8.5 OpenClaw 配置文件
+### 8.5 OpenClaw Configuration File
 
-**来源**: design.md Section 6.2.4
+**Source**: design_en.md Section 6.2.4
 
 ```yaml
 # ~/.cryptoclaw/config/openclaw.yaml
-# OpenClaw Gateway 配置
+# OpenClaw Gateway Configuration
 
 gateway:
   name: cryptoclaw
   port: 8080
 
 channels:
-  # Telegram 渠道配置（用户的 Bot）
+  # Telegram channel config (user's bot)
   telegram:
     enabled: true
-    token: ${TELEGRAM_BOT_TOKEN}  # 从环境变量读取
+    token: ${TELEGRAM_BOT_TOKEN}  # Read from environment variable
     
-  # WhatsApp 渠道配置
+  # WhatsApp channel config
   whatsapp:
     enabled: false
-    # WhatsApp 使用 Baileys，首次需要扫码绑定
+    # WhatsApp uses Baileys, requires QR scan on first use
     
-  # 飞书渠道配置
+  # Feishu channel config
   feishu:
     enabled: false
     appId: ""
     appSecret: ""
 
 llm:
-  # LLM 配置
+  # LLM config
   provider: openai  # openai | anthropic | local
   apiKey: ${LLM_API_KEY}
   model: gpt-4
 
-# Freqtrade 配置路径
+# Freqtrade config path
 freqtrade:
   configPath: /app/user_data/config.json
   userDataDir: /app/user_data
 ```
 
-### 8.6 环境变量文件
+### 8.6 Environment Variables File
 
-**来源**: design.md Section 6.2.4
+**Source**: design_en.md Section 6.2.4
 
 ```bash
 # ~/.cryptoclaw/config/.env
-# 敏感信息通过环境变量传入
+# Sensitive info via environment variables
 
-# Telegram Bot Token（用户的 Bot）
+# Telegram Bot Token (user's bot)
 TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
 
 # LLM API Key
 LLM_API_KEY=sk-xxxx
 LLM_PROVIDER=openai
 
-# 交易所 API Key（可选，也可通过桌面客户端配置）
+# Exchange API Keys (optional, can also configure via desktop client)
 BINANCE_API_KEY=xxx
 BINANCE_API_SECRET=xxx
 ```
 
-### 8.7 配置向导脚本
+### 8.7 Configuration Wizard Script
 
-**来源**: design.md Section 6.2.4
+**Source**: design_en.md Section 6.2.4
 
 ```bash
 #!/bin/bash
-# init-config.sh - 首次运行配置向导
+# init-config.sh - First-run configuration wizard
 
 CONFIG_DIR=~/.cryptoclaw/config
 
-echo "🔧 CryptoClaw 配置向导"
-echo "========================"
+echo "🔧 CryptoClaw Configuration Wizard"
+echo "==================================="
 echo ""
 
-# 创建配置目录
+# Create config directory
 mkdir -p "$CONFIG_DIR"
 
-# 检查是否已有配置
+# Check for existing config
 if [ -f "$CONFIG_DIR/.env" ]; then
-    echo "⚠️  检测到已有配置，是否重新配置？(y/n)"
+    echo "⚠️  Existing config detected, reconfigure? (y/n)"
     read -r answer
     if [ "$answer" != "y" ]; then
-        echo "使用现有配置"
+        echo "Using existing config"
         exit 0
     fi
 fi
 
-# 配置 Telegram Bot
+# Configure Telegram Bot
 echo ""
-echo "📱 Telegram Bot 配置"
-echo "-------------------"
-echo "请按照以下步骤获取 Bot Token:"
-echo "1. 在 Telegram 中搜索 @BotFather"
-echo "2. 发送 /newbot 创建新 Bot"
-echo "3. 按提示设置 Bot 名称"
-echo "4. 复制获得的 Token（格式：123456789:ABCdef...）"
+echo "📱 Telegram Bot Configuration"
+echo "-----------------------------"
+echo "Follow these steps to get your Bot Token:"
+echo "1. Search @BotFather in Telegram"
+echo "2. Send /newbot to create a new bot"
+echo "3. Follow prompts to set bot name"
+echo "4. Copy the token (format: 123456789:ABCdef...)"
 echo ""
-echo "请输入您的 Telegram Bot Token:"
+echo "Enter your Telegram Bot Token:"
 read -r TELEGRAM_TOKEN
 
-# 配置 LLM
+# Configure LLM
 echo ""
-echo "🤖 LLM API 配置"
-echo "--------------"
-echo "请选择 LLM 提供商:"
-echo "1) OpenAI (推荐)"
+echo "🤖 LLM API Configuration"
+echo "----------------------"
+echo "Select LLM provider:"
+echo "1) OpenAI (recommended)"
 echo "2) Anthropic Claude"
-echo "3) 本地模型（跳过）"
+echo "3) Local model (skip)"
 read -r llm_choice
 
 case $llm_choice in
     1)
-        echo "请输入 OpenAI API Key (sk-...):"
+        echo "Enter OpenAI API Key (sk-...):"
         read -r LLM_KEY
         LLM_PROVIDER="openai"
         ;;
     2)
-        echo "请输入 Anthropic API Key (sk-ant-...):"
+        echo "Enter Anthropic API Key (sk-ant-...):"
         read -r LLM_KEY
         LLM_PROVIDER="anthropic"
         ;;
     3)
-        echo "将使用本地模型"
+        echo "Will use local model"
         LLM_KEY=""
         LLM_PROVIDER="local"
         ;;
     *)
-        echo "无效选择，跳过 LLM 配置"
+        echo "Invalid choice, skipping LLM config"
         LLM_KEY=""
         LLM_PROVIDER=""
         ;;
 esac
 
-# 写入 .env 文件
+# Write .env file
 cat > "$CONFIG_DIR/.env" << EOF
-# CryptoClaw 环境变量配置
-# 生成时间: $(date)
+# CryptoClaw Environment Variables
+# Generated: $(date)
 
 # Telegram Bot Token
 TELEGRAM_BOT_TOKEN=$TELEGRAM_TOKEN
 
-# LLM 配置
+# LLM Configuration
 LLM_PROVIDER=$LLM_PROVIDER
 LLM_API_KEY=$LLM_KEY
 EOF
 
-# 生成 openclaw.yaml 配置文件
+# Generate openclaw.yaml config
 cat > "$CONFIG_DIR/openclaw.yaml" << EOF
-# OpenClaw 配置文件
+# OpenClaw Configuration File
 gateway:
   name: cryptoclaw
   port: 8080
@@ -1912,27 +1904,27 @@ freqtrade:
   userDataDir: /app/user_data
 EOF
 
-# 设置文件权限
+# Set file permissions
 chmod 600 "$CONFIG_DIR/.env"
 
 echo ""
-echo "✅ 配置完成！"
+echo "✅ Configuration complete!"
 echo ""
-echo "配置文件位置:"
-echo "  - $CONFIG_DIR/.env (敏感信息)"
-echo "  - $CONFIG_DIR/openclaw.yaml (OpenClaw 配置)"
+echo "Config files located at:"
+echo "  - $CONFIG_DIR/.env (sensitive info)"
+echo "  - $CONFIG_DIR/openclaw.yaml (OpenClaw config)"
 echo ""
-echo "现在可以启动服务:"
+echo "Now start the service:"
 echo "  ~/.cryptoclaw/start.sh"
 echo ""
 ```
 
-### 8.8 桌面客户端配置管理
+### 8.8 Desktop Client Configuration Manager
 
-**来源**: design.md Section 6.2.5
+**Source**: design_en.md Section 6.2.5
 
 ```typescript
-// 桌面客户端配置管理
+// Desktop Client Config Manager
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs/promises';
@@ -1952,23 +1944,23 @@ class ConfigManager {
     this.configDir = path.join(os.homedir(), '.cryptoclaw', 'config');
   }
   
-  // 读取配置
+  // Load configuration
   async loadConfig(): Promise<CryptoClawConfig> {
     const envPath = path.join(this.configDir, '.env');
     const yamlPath = path.join(this.configDir, 'openclaw.yaml');
     
-    // 读取 .env 文件
+    // Read .env file
     const envConfig = dotenv.parse(await fs.readFile(envPath));
     
-    // 读取 yaml 文件
+    // Read yaml file
     const yamlConfig = yaml.parse(await fs.readFile(yamlPath, 'utf8'));
     
     return { env: envConfig, openclaw: yamlConfig };
   }
   
-  // 保存配置
+  // Save configuration
   async saveConfig(config: Partial<CryptoClawConfig>): Promise<void> {
-    // 写入 .env
+    // Write .env
     if (config.env) {
       const envContent = Object.entries(config.env)
         .map(([k, v]) => `${k}=${v}`)
@@ -1976,11 +1968,11 @@ class ConfigManager {
       await fs.writeFile(
         path.join(this.configDir, '.env'),
         envContent,
-        { mode: 0o600 }  // 仅所有者可读写
+        { mode: 0o600 }  // Owner read/write only
       );
     }
     
-    // 写入 yaml
+    // Write yaml
     if (config.openclaw) {
       await fs.writeFile(
         path.join(this.configDir, 'openclaw.yaml'),
@@ -1988,17 +1980,17 @@ class ConfigManager {
       );
     }
     
-    // 重启容器使配置生效
+    // Restart container to apply config
     await this.restartContainer();
   }
   
-  // 重启容器
+  // Restart container
   async restartContainer(): Promise<void> {
     execSync('docker restart cryptoclaw');
   }
 }
 
-// Telegram Token 验证
+// Telegram Token Verification
 async function verifyTelegramToken(token: string): Promise<boolean> {
   try {
     const response = await fetch(
@@ -2011,7 +2003,7 @@ async function verifyTelegramToken(token: string): Promise<boolean> {
   }
 }
 
-// OpenAI API Key 验证
+// OpenAI API Key Verification
 async function verifyOpenAIKey(apiKey: string): Promise<boolean> {
   try {
     const response = await fetch('https://api.openai.com/v1/models', {
@@ -2024,139 +2016,85 @@ async function verifyOpenAIKey(apiKey: string): Promise<boolean> {
 }
 ```
 
-### 8.9 更新脚本
+### 8.9 Update Script
 
-**来源**: design.md Section 6.4.2
+**Source**: design_en.md Section 6.4.2
 
 ```bash
 #!/bin/bash
-# update.sh - CryptoClaw 更新脚本
+# update.sh - CryptoClaw update script
 
-echo "🔄 检查更新..."
+echo "🔄 Checking for updates..."
 
-# 获取当前版本
+# Get current version
 CURRENT=$(docker exec cryptoclaw cat /app/VERSION 2>/dev/null || echo "unknown")
 
-# 获取最新版本
+# Get latest version
 LATEST=$(curl -s https://api.cryptoclaw.pro/updates/latest | jq -r '.version')
 
 if [ "$CURRENT" != "$LATEST" ]; then
-    echo "📦 发现新版本: $LATEST (当前: $CURRENT)"
-    echo "正在更新..."
+    echo "📦 New version available: $LATEST (current: $CURRENT)"
+    echo "Updating..."
     
-    # 拉取新镜像
+    # Pull new image
     docker pull cryptoclaw/cryptoclaw:$LATEST
     
-    # 停止旧容器
+    # Stop old container
     docker stop cryptoclaw
     docker rm cryptoclaw
     
-    # 启动新容器（使用相同配置）
+    # Start new container (using same config)
     ~/.cryptoclaw/start.sh
     
-    echo "✅ 更新完成！"
+    echo "✅ Update complete!"
 else
-    echo "✅ 已是最新版本: $CURRENT"
+    echo "✅ Already on latest version: $CURRENT"
 fi
 ```
 
-### 8.10 版本回滚脚本
+### 8.10 Version Rollback Script
 
-**来源**: design.md Section 6.4.3
+**Source**: design_en.md Section 6.4.3
 
 ```bash
 #!/bin/bash
-# rollback.sh - 版本回滚脚本
+# rollback.sh - Version rollback script
 
 VERSION=$1
 
 if [ -z "$VERSION" ]; then
-    echo "用法: ./rollback.sh <版本号>"
-    echo "可用版本:"
+    echo "Usage: ./rollback.sh <version>"
+    echo "Available versions:"
     curl -s https://api.cryptoclaw.pro/updates/versions | jq -r '.[]'
     exit 1
 fi
 
-echo "🔄 回滚到版本 $VERSION..."
+echo "🔄 Rolling back to version $VERSION..."
 
 docker stop cryptoclaw
 docker rm cryptoclaw
 docker pull cryptoclaw/cryptoclaw:$VERSION
 
-# 更新启动脚本使用指定版本
+# Update start script to use specified version
 sed -i "s/cryptoclaw\/cryptoclaw:latest/cryptoclaw\/cryptoclaw:$VERSION/" ~/.cryptoclaw/start.sh
 
 ~/.cryptoclaw/start.sh
 
-echo "✅ 已回滚到版本 $VERSION"
-```
-
-### 8.11 源码运行方案
-
-**来源**: design.md Section 6.5
-
-**环境要求:**
-
-| 组件 | 版本 | 说明 |
-|------|------|------|
-| Python | 3.11+ | Freqtrade 依赖 |
-| Node.js | 20+ | OpenClaw 依赖 |
-| Docker | 24+ | 可选，用于容器化 |
-| Git | 2.x | 版本控制 |
-
-**快速开始:**
-
-```bash
-# 1. 克隆仓库
-git clone https://github.com/franklili3/CryptoClaw.git
-cd CryptoClaw
-
-# 2. 安装依赖
-pip install freqtrade
-npm install -g openclaw
-
-# 3. 初始化配置
-cp templates/config.json user_data/config.json
-cp templates/AGENTS.md workspace/AGENTS.md
-
-# 4. 启动服务
-./scripts/start.sh
-```
-
-### 8.12 安装验证命令
-
-**来源**: design.md Section 6.8
-
-安装完成后，用户可以通过以下方式验证：
-
-```bash
-# 检查服务状态
-docker ps | grep cryptoclaw
-
-# 检查版本
-docker exec cryptoclaw cat /app/VERSION
-
-# 检查日志
-docker logs cryptoclaw --tail 100
-
-# 检查 API
-curl http://localhost:8080/health
-
-# 测试 Telegram Bot
-# 在 Telegram 中搜索您的 Bot，发送 /start
+echo "✅ Rolled back to version $VERSION"
 ```
 
 ---
 
-## 更新日志
+## Changelog
 
-| 日期 | 版本 | 说明 |
+| Date | Version | Description |
 |------|------|------|
-| 2026-03-17 | v1.0 | 从 requirement.md v6.0 提取所有代码块 |
-| 2026-03-18 | v1.1 | 补充更新 API、架构图、部署配置 |
-| 2026-03-18 | v1.2 | 从 design.md 迁移安装部署代码 |
+| 2026-03-17 | v1.0 | Extracted all code blocks from requirement.md v6.0 |
+| 2026-03-18 | v1.1 | Added update API, architecture diagrams, deployment config |
+| 2026-03-18 | v1.2 | English translation |
+| 2026-03-18 | v1.3 | Migrated installation & deployment code from design.md |
 
 ---
 
-*本文档由 CryptoClaw 团队维护*
-*最后更新: 2026-03-18*
+*Maintained by CryptoClaw Team*
+*Last Updated: 2026-03-18*

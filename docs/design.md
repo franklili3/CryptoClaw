@@ -176,11 +176,47 @@ OpenClaw 的核心体系结构是 **Soul → Agent → Skill → Tool → Script
 
 ### 2.2 Agent Workspace (工作区)
 
-**目录结构：**
+**目录结构（基于 Freqtrade user_data 标准）：**
 
 ```
-~/.cryptoclaw/
-├── workspace/                    # Agent 工作区
+~/.cryptoclaw/                    # CryptoClaw 根目录
+├── user_data/                    # Freqtrade 标准 user_data 目录
+│   ├── config.json               # Freqtrade 主配置文件
+│   ├── config-private.json       # 交易所 API 密钥配置（加密，不上传）
+│   │
+│   ├── strategies/               # Freqtrade 策略目录
+│   │   ├── __init__.py
+│   │   ├── sample_strategy.py    # 示例策略
+│   │   └── user_strategies/      # 用户自定义策略
+│   │       ├── rsi_strategy.py
+│   │       └── macd_strategy.py
+│   │
+│   ├── data/                     # Freqtrade 历史数据目录
+│   │   ├── binance/              # 按交易所分目录
+│   │   │   ├── BTC_USDT-1h.feather
+│   │   │   └── ETH_USDT-1h.feather
+│   │   └── okx/
+│   │       └── ...
+│   │
+│   ├── notebooks/                # Jupyter notebooks（可选）
+│   │   └── strategy_analysis.ipynb
+│   │
+│   ├── plot/                     # 回测图表输出目录
+│   │   └── profit_chart.html
+│   │
+│   ├── hyperopts/                # Hyperopt 结果目录
+│   │   └── rsi_strategy_20260317.json
+│   │
+│   └── freqaimodels/             # FreqAI 模型目录（可选）
+│       └── ...
+│
+├── tradesv3.sqlite               # Freqtrade 交易数据库（实盘）
+├── tradesv3.dryrun.sqlite        # Freqtrade 交易数据库（模拟）
+│
+├── cryptoclaw.db                 # CryptoClaw 本地数据库
+│                                 # - 用户信息、高水位记录、账单等
+│
+├── workspace/                    # OpenClaw Agent 工作区
 │   ├── AGENTS.md                 # 运行时行为规范
 │   ├── SOUL.md                   # 人格定义
 │   ├── USER.md                   # 用户配置
@@ -188,24 +224,32 @@ OpenClaw 的核心体系结构是 **Soul → Agent → Skill → Tool → Script
 │   ├── MEMORY.md                 # 长期记忆
 │   ├── memory/                   # 每日记忆
 │   │   └── 2026-03-17.md
-│   ├── skills/                   # 自定义技能
-│   │   ├── freqtrade/
-│   │   │   └── SKILL.md
-│   │   ├── billing/
-│   │   │   └── SKILL.md
-│   │   └── trading-signals/
-│   │       └── SKILL.md
-│   └── strategies/               # Freqtrade 策略
-│       └── user_strategies/
-│           └── rsi_strategy.py
-├── data/                         # 本地数据
-│   ├── freqtrade.db              # 交易数据库
-│   ├── keys.db                   # 加密密钥存储
-│   └── trades/                   # 交易记录
-└── config/                       # 配置文件
-    ├── freqtrade.json            # Freqtrade 配置
-    └── keys.json                 # API Key 配置（加密）
+│   └── skills/                   # OpenClaw 自定义技能
+│       ├── freqtrade/
+│       │   └── SKILL.md
+│       ├── billing/
+│       │   └── SKILL.md
+│       └── trading-signals/
+│           └── SKILL.md
+│
+└── logs/                         # 日志目录
+    ├── freqtrade.log             # Freqtrade 日志
+    └── cryptoclaw.log            # CryptoClaw 日志
 ```
+
+**目录说明：**
+
+| 目录/文件 | 说明 |
+|----------|------|
+| `user_data/` | Freqtrade 标准用户数据目录，兼容 Freqtrade CLI |
+| `user_data/config.json` | Freqtrade 主配置，包含策略参数、交易对等 |
+| `user_data/config-private.json` | 交易所 API 密钥，加入 .gitignore |
+| `user_data/strategies/` | 策略文件目录，AI 生成的策略存放于此 |
+| `user_data/data/` | 历史数据目录，按交易所和时间框架存储 |
+| `tradesv3.sqlite` | Freqtrade 实盘交易数据库 |
+| `tradesv3.dryrun.sqlite` | Freqtrade 模拟交易数据库 |
+| `cryptoclaw.db` | CryptoClaw 业务数据库（高水位、账单、支付） |
+| `workspace/` | OpenClaw Agent 运行时目录 |
 
 ### 2.3 Skills (技能) 设计
 
@@ -499,7 +543,263 @@ Level 2: Communication Keys (通信密钥)
 
 ---
 
-## 六、开发计划
+## 六、安装与部署设计
+
+### 6.1 安装方式对比
+
+| 方式 | 目标用户 | 优点 | 缺点 | 推荐度 |
+|------|----------|------|------|--------|
+| **Docker 镜像** | 普通用户 | 一键安装、环境隔离、更新简单 | 需要 Docker | ⭐⭐⭐⭐⭐ |
+| **安装包** | 普通用户 | 原生体验、无需 Docker | 构建复杂、平台适配 | ⭐⭐⭐⭐ |
+| **源码运行** | 开发者 | 灵活、可定制 | 需要技术能力 | ⭐⭐⭐ |
+
+**推荐方案：Docker 镜像为主，源码运行为辅**
+
+### 6.2 Docker 镜像方案（推荐）
+
+#### 6.2.1 镜像结构
+
+详见 [技术规范 - Dockerfile](technical-spec.md#81-dockerfile)
+
+#### 6.2.2 一键安装脚本
+
+详见 [技术规范 - 安装脚本](technical-spec.md#82-一键安装脚本-macoslinux)
+
+#### 6.2.3 目录挂载
+
+详见 [技术规范 - Docker Compose 配置](technical-spec.md#84-docker-compose-配置)
+
+#### 6.2.4 渠道配置方案（重要）
+
+**问题：** OpenClaw 需要配置用户自己的 Telegram Bot、WhatsApp 等渠道信息，这些是用户的 Bot，不是服务端的。
+
+**方案对比：**
+
+| 方案 | 优点 | 缺点 | 推荐度 |
+|------|------|------|--------|
+| **环境变量传入** | 简单、安全、无需进入容器 | 长命令行 | ⭐⭐⭐⭐ |
+| **配置文件挂载** | 结构化、易管理、支持多渠道 | 需要编辑文件 | ⭐⭐⭐⭐⭐ |
+| **容器内交互配置** | 引导式、用户友好 | 需要进入容器、配置固化在容器中 | ⭐⭐⭐ |
+| **桌面客户端配置** | GUI 友好、写入配置文件 | 需要额外开发 | ⭐⭐⭐⭐ |
+
+**推荐方案：配置文件挂载 + 初始化向导**
+
+**1. 配置文件结构（挂载到容器）：**
+
+详见 [技术规范 - OpenClaw 配置文件](technical-spec.md#85-openclaw-配置文件)
+
+**2. 环境变量文件：**
+
+详见 [技术规范 - 环境变量文件](technical-spec.md#86-环境变量文件)
+
+**3. 更新后的 docker-compose.yml：**
+
+详见 [技术规范 - Docker Compose 配置](technical-spec.md#84-docker-compose-配置)
+
+**4. 初始化向导脚本：**
+
+详见 [技术规范 - 配置向导脚本](technical-spec.md#87-配置向导脚本)
+
+**5. 更新一键安装脚本：**
+
+详见 [技术规范 - 安装脚本](technical-spec.md#82-一键安装脚本-macoslinux)
+
+**6. 目录结构更新：**
+
+```
+~/.cryptoclaw/
+├── config/                       # 配置目录
+│   ├── .env                      # 环境变量（敏感信息）
+│   ├── openclaw.yaml             # OpenClaw 配置
+│   └── docker-compose.yml        # Docker Compose 配置
+├── user_data/                    # Freqtrade 数据
+├── workspace/                    # OpenClaw 工作区
+├── logs/                         # 日志
+├── start.sh                      # 启动脚本
+├── stop.sh                       # 停止脚本
+└── update.sh                     # 更新脚本
+```
+
+**方案优势：**
+- ✅ 配置与镜像分离，更新不影响配置
+- ✅ 敏感信息通过环境变量或 .env 文件管理
+- ✅ 初始化向导引导用户完成配置
+- ✅ 支持多渠道灵活配置
+- ✅ 可通过桌面客户端编辑配置文件
+
+#### 6.2.5 桌面客户端与配置方案（重要）
+
+**问题：** 终端配置向导对普通用户不友好，需要明确桌面客户端的角色。
+
+**解决方案：桌面客户端作为主要配置入口**
+
+**1. 桌面客户端安装方式：**
+
+| 平台 | 安装包 | 说明 |
+|------|--------|------|
+| **macOS** | CryptoClaw.dmg / .app | 拖拽安装到 Applications |
+| **Windows** | CryptoClaw-Setup.exe | 安装向导 |
+| **Linux** | CryptoClaw.AppImage / .deb / .rpm | 便携版 / 包管理器 |
+
+**2. 桌面客户端首次启动流程：**（7 步向导）
+
+| 步骤 | 内容 |
+|------|------|
+| Step 1 | 欢迎界面 |
+| Step 2 | 检查 Docker |
+| Step 3 | 下载/启动容器 |
+| Step 4 | 用户注册/登录 |
+| Step 5 | 配置 Telegram Bot |
+| Step 6 | 配置 LLM API |
+| Step 7 | 配置完成 |
+
+**3. 桌面客户端设置面板：**
+- 服务状态监控（Docker 容器状态、版本、运行时间）
+- 渠道管理（Telegram/WhatsApp/飞书）
+- AI 模型配置（OpenAI/Claude/本地模型）
+- 交易所 API Key 管理（Binance/OKX 等）
+- **账户管理（登录/退出）** - 独立功能，用于已注册用户切换账号
+- 高级设置（日志查看、数据备份）
+
+**4. 桌面客户端技术实现：**
+
+详见 [技术规范 - 桌面客户端配置管理](technical-spec.md#88-桌面客户端配置管理)
+
+**5. 配置方案总结：**
+
+| 配置项 | 配置方式 | 存储位置 | 说明 |
+|--------|----------|----------|------|
+| **Telegram Bot Token** | 桌面向导/设置面板 | ~/.cryptoclaw/config/.env | 加密存储 |
+| **LLM API Key** | 桌面向导/设置面板 | ~/.cryptoclaw/config/.env | 加密存储 |
+| **交易所 API Key** | 桌面设置面板（单独管理） | ~/.cryptoclaw/cryptoclaw.db | AES-256 加密 |
+| **渠道开关** | 桌面设置面板 | ~/.cryptoclaw/config/openclaw.yaml | 明文配置 |
+| **Freqtrade 配置** | 桌面设置面板 | ~/.cryptoclaw/user_data/config.json | Freqtrade 标准 |
+
+**6. 终端脚本与桌面客户端的关系：**
+
+- **普通用户（推荐）**：下载桌面客户端安装包，启动桌面客户端，跟随向导完成配置，所有配置通过 GUI 管理
+- **高级用户 / 开发者**：使用终端一键安装脚本，使用终端配置向导（或手动编辑配置文件），docker-compose 管理容器
+- **无头服务器用户**：SSH 登录服务器，运行终端安装脚本，手动编辑配置文件，通过 Telegram 交互使用
+
+### 6.3 软件更新机制
+
+#### 6.3.1 更新流程
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      自动更新流程                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  1. 启动检查                                                │
+│     容器启动时检查最新版本                                   │
+│     curl api.cryptoclaw.pro/updates/check?v=1.0.0           │
+│                                                             │
+│  2. 版本比较                                                │
+│     { latest: "1.2.0", force: false, notes: "..." }         │
+│                                                             │
+│  3. 用户确认                                                │
+│     通过 Telegram 发送更新通知                               │
+│     "新版本 v1.2.0 可用，是否更新？"                         │
+│                                                             │
+│  4. 执行更新                                                │
+│     docker pull cryptoclaw/cryptoclaw:latest                │
+│     docker restart cryptoclaw                               │
+│                                                             │
+│  5. 数据保留                                                │
+│     由于使用卷挂载，数据自动保留                             │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 6.3.2 更新脚本
+
+详见 [技术规范 - 更新脚本](technical-spec.md#89-更新脚本)
+
+#### 6.3.3 版本回滚
+
+详见 [技术规范 - 版本回滚脚本](technical-spec.md#810-版本回滚脚本)
+
+### 6.4 源码运行方案
+
+#### 6.4.1 环境要求
+
+| 组件 | 版本 | 说明 |
+|------|------|------|
+| Python | 3.11+ | Freqtrade 依赖 |
+| Node.js | 20+ | OpenClaw 依赖 |
+| Docker | 24+ | 可选，用于容器化 |
+| Git | 2.x | 版本控制 |
+
+#### 6.4.2 快速开始
+
+详见 [技术规范 - 源码运行方案](technical-spec.md#811-源码运行方案)
+
+### 6.5 安装包分发
+
+#### 6.5.1 镜像仓库
+
+```
+Docker Hub: cryptoclaw/cryptoclaw
+├── latest          # 最新稳定版
+├── v1.0.0          # 指定版本
+├── v1.1.0
+├── develop         # 开发版
+└── nightly         # 每日构建
+```
+
+#### 6.5.2 GitHub Release
+
+```
+https://github.com/franklili3/CryptoClaw/releases
+├── Source code (zip)
+├── Source code (tar.gz)
+├── install.sh      # Linux/macOS 安装脚本
+├── install.ps1     # Windows 安装脚本
+└── CHANGELOG.md    # 更新日志
+```
+
+### 6.6 用户引导流程
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      新用户引导                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  1. 访问官网                                                │
+│     cryptoclaw.pro                                          │
+│                                                             │
+│  2. 选择安装方式                                            │
+│     ├─ Docker 一键安装（推荐）                              │
+│     ├─ 源码安装                                             │
+│     └─ 查看文档                                             │
+│                                                             │
+│  3. 执行安装                                                │
+│     curl -fsSL cryptoclaw.pro/install.sh | bash            │
+│                                                             │
+│  4. 启动服务                                                │
+│     ~/.cryptoclaw/start.sh                                  │
+│                                                             │
+│  5. Telegram 绑定                                           │
+│     搜索 @CryptoClawBot                                     │
+│     发送 /start 绑定账户                                    │
+│                                                             │
+│  6. 配置 API Key（通过桌面客户端）                          │
+│     - 交易所 API Key                                        │
+│     - 大模型 API Key                                        │
+│                                                             │
+│  7. 开始使用                                                │
+│     "帮我创建一个 RSI 策略"                                 │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 6.7 安装验证
+
+详见 [技术规范 - 安装验证命令](technical-spec.md#812-安装验证命令)
+
+---
+
+## 七、开发计划
 
 ### Phase 1: MVP (Week 1-4)
 
@@ -530,7 +830,7 @@ Level 2: Communication Keys (通信密钥)
 
 ---
 
-## 七、参考资源
+## 八、参考资源
 
 - [OpenClaw 文档](https://docs.openclaw.ai)
 - [Freqtrade 文档](https://www.freqtrade.io)
@@ -539,6 +839,6 @@ Level 2: Communication Keys (通信密钥)
 
 ---
 
-**文档版本:** v1.0  
-**最后更新:** 2026-03-17  
+**文档版本:** v1.1  
+**最后更新:** 2026-03-18  
 **作者:** CryptoClaw Team
