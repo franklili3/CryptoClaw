@@ -9,42 +9,42 @@
     "email": "support@cryptoclaw.pro"
   },
   "scripts": {
-    "start": "electron-forge make --platform=darwin",
-    "build": "npm run build:renderer",
-    "postbuild": "electron-builder install-app-deps platform=darwin",
-    "build: "npm run build:renderer",
-    "postbuild": "electron-builder --platform=linux --x64",
-    "build": "npm run build:renderer"
-    "postbuild": "electron-builder install-app-deps platform=linux --x64",
-    "build: "npm run build:renderer"
-    "pack": "electron-builder --dir=dist",
-    "dmg": "electron-builder --dir=dist",
-    "nsis": "electron-builder --dir=dist"
-    "deb": "electron-builder --dir=dist"
-    "win": "electron-builder --dir=dist",
-    "postinstall": "npm run postinstall"
-    "publish": {
-      "provider": "github",
-      "owner": "franklili3"
-    }
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux",
+    "pack": "electron-builder --dir",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "axios": "^1.6.0",
+    "better-sqlite3": "^11.0.0",
     "electron-log": "^5.0.0",
-    "electron-store": "^8.0.0",
-    "electron-updater": "^4.0.0",
-    "electron-window-state": "^5.0.0",
-    "better-sqlite3": "^11.0.0"
-    "axios": "^1.0.0"
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "typescript": "^5.0.0"
+    "electron-store": "^8.1.0",
+    "electron-updater": "^6.1.0",
+    "electron-window-state": "^5.0.3",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "@types/react": "^18.0.0",
-    " "@types/react-dom": "^18.0.0",
     "electron": "^30.0.0",
-    "electron-builder": "^25.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "pro.cryptoclaw.client",
+    "productName": "CryptoClaw",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.finance"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
   }
 }

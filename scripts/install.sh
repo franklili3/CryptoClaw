@@ -93,6 +93,35 @@ install_docker() {
     fi
 }
 
+# 检查 SQLite（使用 Python 内置）
+check_sqlite() {
+    log_info "Checking SQLite..."
+    
+    # 检查 Python3
+    if ! command -v python3 &> /dev/null; then
+        log_error "Python3 not found. Please install Python 3.8+"
+        exit 1
+    fi
+    
+    # 获取 SQLite 版本（通过 Python）
+    SQLITE_VERSION=$(python3 -c "import sqlite3; print(sqlite3.sqlite_version)" 2>/dev/null)
+    
+    if [[ -z "$SQLITE_VERSION" ]]; then
+        log_error "Failed to detect SQLite version"
+        exit 1
+    fi
+    
+    log_success "SQLite version: $SQLITE_VERSION (via Python3)"
+    
+    # 检查最低版本要求 (3.35.0+ 用于 JSON 和窗口函数支持)
+    MIN_VERSION="3.35.0"
+    if python3 -c "import sqlite3; exit(0 if tuple(map(int, sqlite3.sqlite_version.split('.'))) >= tuple(map(int, '$MIN_VERSION'.split('.'))) else 1)" 2>/dev/null; then
+        log_success "SQLite version meets requirements (>= $MIN_VERSION)"
+    else
+        log_warning "SQLite version $SQLITE_VERSION may have limited features. Recommended: >= $MIN_VERSION"
+    fi
+}
+
 # 创建目录结构
 create_directories() {
     log_info "Creating directory structure..."
@@ -531,6 +560,7 @@ main() {
     show_banner
     detect_os
     check_docker
+    check_sqlite
     create_directories
     pull_image
     create_config_templates
