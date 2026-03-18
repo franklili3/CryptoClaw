@@ -1,77 +1,77 @@
-<p align="center">
-  <img src="assets/CryptoClaw_banner_200.jpg" alt="CryptoClaw Logo" width="200">
-</p>
+# CryptoClaw
 
-<h1 align="center">CryptoClaw 🦞</h1>
+> AI-Powered Crypto Trading Assistant - Chat-first, Local-first, Pay only on profit
 
-<p align="center">
-  <b>Your AI quant trading team, right in your chat.</b>
-</p>
-
-<p align="center">
-  <a href="README_CN.md">简体中文</a> | English
-</p>
-
----
-
-**CryptoClaw** is an AI-powered cryptocurrency quantitative trading assistant that lets you write trading strategies in natural language and execute everything through Telegram or WhatsApp conversations.
-
-## ✨ Features
-
-- 🗣️ **Natural Language Strategies** - No coding required, just describe your strategy
-- 📱 **Chat-First Interface** - Everything via Telegram/WhatsApp
-- 📊 **One-Click Backtesting** - AI explains results in plain language
-- 💰 **Pay Only on Profit** - Free to use, 10% fee only when you profit
-- 🔐 **Local-First Privacy** - API keys encrypted locally, never uploaded
-- 📈 **Built-in Strategies** - BTC/ETH mean reversion strategies included
+[English](README.md) | [中文文档](docs/README_CN.md)
 
 ## 🚀 Quick Start
 
+### One-Line Installation
+
+**macOS / Linux:**
 ```bash
-# Clone the repository
-git clone https://github.com/franklili3/cryptoclaw.git
-
-# Install dependencies
-cd cryptoclaw
-npm install
-
-# Start the application
-npm start
+curl -fsSL cryptoclaw.pro/install.sh | bash
 ```
 
-## 🏗️ Architecture
-
-```
-┌─────────────────┐     ┌─────────────────┐
-│  Telegram/      │     │  Desktop Client │
-│  WhatsApp Bot   │     │  (Electron)     │
-│  (Chat UI)      │     │  (API Keys)     │
-└────────┬────────┘     └────────┬────────┘
-         │                       │
-         └───────────┬───────────┘
-                     │
-         ┌───────────┴───────────┐
-         │      OpenClaw         │
-         │   (AI Agent)          │
-         └───────────┬───────────┘
-                     │
-         ┌───────────┴───────────┐
-         │     Freqtrade         │
-         │   (Quant Engine)      │
-         └───────────────────────┘
+**Windows (PowerShell):**
+```powershell
+irm cryptoclaw.pro/install.ps1 | iex
 ```
 
-## 💼 Business Model
+### Manual Installation
 
-- ✅ **Free to use** - No subscription, no upfront cost
-- ✅ **Pay only on profit** - 10% of profits, high watermark mechanism
-- ✅ **No profit, no fee** - Losses and recovery periods are not charged
+1. **Prerequisites**
+   - Docker Desktop installed and running
+   - Telegram account
 
-## 🔒 Privacy & Security
+2. **Clone and Setup**
+   ```bash
+   git clone https://github.com/franklili3/CryptoClaw.git
+   cd CryptoClaw
+   ./scripts/install.sh
+   ```
 
-- 🔐 API keys stored locally with AES-256 encryption
-- 🔐 Trading data never leaves your device
-- 🔐 No cloud storage of sensitive information
+3. **Configure**
+   ```bash
+   ~/.cryptoclaw/start.sh
+   ```
+
+4. **Start Using**
+   - Search for your bot on Telegram
+   - Send `/start` to begin
+
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| 🤖 **Chat-First** | All trading operations via Telegram/WhatsApp |
+| 🔐 **Local-First** | Your API keys stay on your device (AES-256 encrypted) |
+| 💰 **Pay on Profit** | 10% fee only when you make profit |
+| 📊 **Backtesting** | Test strategies with historical data |
+| 📈 **Paper Trading** | Practice without real money |
+| ⚡ **Live Trading** | Execute trades automatically |
+
+## 📁 Project Structure
+
+```
+CryptoClaw/
+├── docs/                    # Documentation
+│   ├── requirement.md       # Product Requirements (CN)
+│   ├── requirement_en.md    # Product Requirements (EN)
+│   ├── design.md            # Design Document (CN)
+│   ├── design_en.md         # Design Document (EN)
+│   ├── technical-spec.md    # Technical Spec (CN)
+│   └── technical-spec_en.md # Technical Spec (EN)
+├── scripts/                 # Installation scripts
+│   ├── install.sh           # macOS/Linux installer
+│   ├── install.ps1          # Windows installer
+│   └── init-config.sh       # Configuration wizard
+├── skills/                  # OpenClaw Skills
+│   ├── freqtrade/           # Trading skill
+│   └── billing/             # Billing skill
+├── tests/                   # Test scripts
+└── installer/               # Desktop installer (coming soon)
+```
 
 ## 🛠️ Tech Stack
 
@@ -79,37 +79,26 @@ npm start
 |-----------|------------|
 | AI Agent | OpenClaw |
 | Quant Engine | Freqtrade |
-| Desktop | Electron |
-| Cloud | Supabase |
-| Messaging | Telegram Bot API |
+| Desktop Client | Electron |
+| Cloud Services | Supabase (minimal) |
 
-## 📋 Roadmap
+## 📚 Documentation
 
-- [x] Requirements & Architecture Design
-- [ ] MVP: Backtesting + Paper Trading
-- [ ] Live Trading Integration
-- [ ] Payment System
-- [ ] More Strategies
+- [Product Requirements](docs/requirement_en.md)
+- [Design Document](docs/design_en.md)
+- [Technical Specification](docs/technical-spec_en.md)
 
-## ⚠️ Disclaimer
+## 🔗 Links
 
-This is a tool, not financial advice. Cryptocurrency trading carries significant risk. Past performance does not guarantee future results. Always do your own research.
+- 🌐 Website: [cryptoclaw.pro](https://cryptoclaw.pro)
+- 📖 Docs: [docs.cryptoclaw.pro](https://docs.cryptoclaw.pro)
+- 💬 Telegram: [@CryptoClawBot](https://t.me/CryptoClawBot)
+- 🐦 Twitter: [@cryptoclaw88](https://twitter.com/cryptoclaw88)
 
 ## 📄 License
 
-MIT License
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📞 Contact
-
-- X (Twitter): [@cryptoclaw_ai](https://x.com/cryptoclaw_ai)
-- GitHub: [franklili3/cryptoclaw](https://github.com/franklili3/cryptoclaw)
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-## Build in Public 🚀
-
-Follow the development journey on X
+*Built with ❤️ by the CryptoClaw Team*
