@@ -115,8 +115,8 @@ llm:\n\
 ' > /app/config/openclaw.yaml && \
     chown cryptoclaw:cryptoclaw /app/config/openclaw.yaml
 
-# Copy default skills (if exists)
-COPY --chown=cryptoclaw:cryptoclaw skills/ /app/workspace/skills/ 2>/dev/null || true
+# Copy default skills
+COPY --chown=cryptoclaw:cryptoclaw skills/ /app/workspace/skills/
 
 # Switch to non-root user
 USER cryptoclaw
