@@ -438,16 +438,16 @@ build_local_image() {
     
     log_info "找到源码目录: $source_dir"
     
-    # 选择基础镜像源
-    local base_image="node:20-alpine"
+    # 选择基础镜像源 (OpenClaw requires Node.js >= 22.12.0)
+    local base_image="node:22-alpine"
     
     if [ "$IS_CHINA" = true ]; then
         log_info "使用国内镜像源..."
         # 国内镜像源列表
         local china_mirrors=(
-            "docker.1ms.run/node:20-alpine"
-            "docker.xuanyuan.me/node:20-alpine"
-            "dockerhub.icu/node:20-alpine"
+            "docker.1ms.run/node:22-alpine"
+            "docker.xuanyuan.me/node:22-alpine"
+            "dockerhub.icu/node:22-alpine"
         )
         
         # 尝试可用的镜像源

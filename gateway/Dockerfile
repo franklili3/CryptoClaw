@@ -10,7 +10,8 @@
 # ============================================
 # Stage 1: Builder (multi-arch aware)
 # ============================================
-ARG BASE_IMAGE=node:20-alpine
+# Note: OpenClaw requires Node.js >= 22.12.0
+ARG BASE_IMAGE=node:22-alpine
 FROM --platform=$BUILDPLATFORM ${BASE_IMAGE} AS builder
 
 # Build arguments for cross-compilation
@@ -38,7 +39,8 @@ RUN npm prune --production
 # ============================================
 # Stage 2: Production Image (multi-arch)
 # ============================================
-ARG BASE_IMAGE=node:20-alpine
+# Note: OpenClaw requires Node.js >= 22.12.0
+ARG BASE_IMAGE=node:22-alpine
 FROM ${BASE_IMAGE} AS production
 
 # Metadata labels

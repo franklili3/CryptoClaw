@@ -28,12 +28,12 @@ PUSH=false
 LOAD=false
 USE_CHINA_MIRROR=false
 
-# 镜像源配置
-OFFICIAL_BASE="node:20-alpine"
+# 镜像源配置 (OpenClaw requires Node.js >= 22.12.0)
+OFFICIAL_BASE="node:22-alpine"
 CHINA_MIRRORS=(
-    "docker.1ms.run/node:20-alpine"
-    "docker.xuanyuan.me/node:20-alpine"
-    "dockerhub.icu/node:20-alpine"
+    "docker.1ms.run/node:22-alpine"
+    "docker.xuanyuan.me/node:22-alpine"
+    "dockerhub.icu/node:22-alpine"
 )
 
 # 日志函数
