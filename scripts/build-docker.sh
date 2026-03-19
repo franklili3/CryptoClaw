@@ -30,11 +30,8 @@ USE_CHINA_MIRROR=false
 
 # 镜像源配置 (OpenClaw requires Node.js >= 22.12.0)
 OFFICIAL_BASE="node:22-alpine"
-CHINA_MIRRORS=(
-    "docker.1ms.run/node:22-alpine"
-    "docker.xuanyuan.me/node:22-alpine"
-    "dockerhub.icu/node:22-alpine"
-)
+CHINA_DOCKER_MIRROR="docker.1ms.run"
+CHINA_ALPINE_MIRROR="https://mirrors.aliyun.com/alpine"
 
 # 日志函数
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
@@ -92,36 +89,6 @@ detect_china_region() {
     return 1
 }
 
-# 获取基础镜像
-get_base_image() {
-    if [ "$USE_CHINA_MIRROR" = true ]; then
-        log_info "使用国内镜像源"
-        # 尝试国内镜像源
-        for mirror in "${CHINA_MIRRORS[@]}"; do
-            log_info "尝试镜像: $mirror"
-            if curl -s --max-time 5 "https://${mirror%%/*}/v2/" > /dev/null 2>&1; then
-                BASE_IMAGE="$mirror"
-                log_success "选择镜像源: $BASE_IMAGE"
-                return 0
-            fi
-        done
-        # 如果都不可用，使用第一个
-        BASE_IMAGE="${CHINA_MIRRORS[0]}"
-        log_warning "无法测试镜像源连通性，使用默认: $BASE_IMAGE"
-    else
-        # 自动检测
-        if detect_china_region; then
-            log_info "检测到中国大陆网络环境"
-            USE_CHINA_MIRROR=true
-            get_base_image
-            return
-        else
-            log_info "使用官方镜像源"
-            BASE_IMAGE="$OFFICIAL_BASE"
-        fi
-    fi
-}
-
 # 解析参数
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -172,47 +139,16 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# 检查 buildx
-check_buildx() {
-    log_step "检查 Docker Buildx..."
+# 检查 Docker
+check_docker() {
+    log_step "检查 Docker..."
     
-    if ! docker buildx version &> /dev/null; then
-        log_error "Docker Buildx 不可用"
-        log_error "请升级 Docker 到支持 buildx 的版本"
+    if ! docker version &> /dev/null; then
+        log_error "Docker 不可用"
         exit 1
     fi
     
-    log_success "Docker Buildx 可用"
-    
-    # 检查 QEMU (多架构支持)
-    if [[ "$PLATFORMS" == *"arm64"* ]] || [[ "$PLATFORMS" == *"amd64,linux/arm64"* ]]; then
-        if ! docker run --rm --privileged multiarch/qemu-user-static --reset -p yes &> /dev/null; then
-            log_warning "QEMU 设置可能需要手动配置"
-        fi
-    fi
-}
-
-# 创建 builder 实例
-create_builder() {
-    log_step "配置 Buildx Builder..."
-    
-    BUILDER_NAME="cryptoclaw-builder"
-    
-    # 本地单架构构建不需要 buildx，使用默认 builder 避免 DNS 问题
-    if [ "$LOAD" = true ] && [[ "$PLATFORMS" != *","* ]]; then
-        log_info "单架构本地构建，使用默认 docker builder"
-        docker buildx use default 2>/dev/null || true
-        return 0
-    fi
-    
-    # 检查 builder 是否存在
-    if docker buildx inspect $BUILDER_NAME &> /dev/null; then
-        log_info "使用现有 builder: $BUILDER_NAME"
-    else
-        log_info "创建新 builder: $BUILDER_NAME"
-        docker buildx create --name $BUILDER_NAME --driver docker-container --use
-        docker buildx inspect --bootstrap
-    fi
+    log_success "Docker 可用"
 }
 
 # 构建镜像
@@ -227,11 +163,32 @@ build_image() {
         exit 1
     fi
     
-    # 获取基础镜像
-    get_base_image
+    # 自动检测是否使用国内镜像
+    if [ "$USE_CHINA_MIRROR" = false ]; then
+        if detect_china_region; then
+            log_info "检测到中国大陆网络环境"
+            USE_CHINA_MIRROR=true
+        fi
+    fi
     
-    # 构建参数
-    BUILD_ARGS="--build-arg VERSION=${VERSION} --build-arg GIT_SHA=${GIT_SHA} --build-arg BASE_IMAGE=${BASE_IMAGE}"
+    # 设置构建参数
+    BUILD_ARGS=""
+    
+    if [ "$USE_CHINA_MIRROR" = true ]; then
+        log_info "使用国内镜像源"
+        BASE_IMAGE="${CHINA_DOCKER_MIRROR}/node:22-alpine"
+        ALPINE_MIRROR="${CHINA_ALPINE_MIRROR}"
+        BUILD_ARGS="--build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg ALPINE_MIRROR=${ALPINE_MIRROR}"
+        log_info "Docker 基础镜像: ${BASE_IMAGE}"
+        log_info "Alpine 镜像源: ${ALPINE_MIRROR}"
+    else
+        log_info "使用官方镜像源"
+        BASE_IMAGE="node:22-alpine"
+        BUILD_ARGS="--build-arg BASE_IMAGE=${BASE_IMAGE}"
+    fi
+    
+    # 添加版本信息
+    BUILD_ARGS="${BUILD_ARGS} --build-arg VERSION=${VERSION} --build-arg GIT_SHA=${GIT_SHA}"
     
     # 标签
     TAGS="-t ${REGISTRY}/${IMAGE_NAME}:${VERSION}"
@@ -242,23 +199,14 @@ build_image() {
     log_info "平台: ${PLATFORMS}"
     log_info "版本: ${VERSION}"
     log_info "Git SHA: ${GIT_SHA}"
-    log_info "基础镜像: ${BASE_IMAGE}"
     
-    # Alpine 镜像源（国内用户）
-    ALPINE_ARG=""
-    if [ "$USE_CHINA_MIRROR" = true ]; then
-        ALPINE_MIRROR="https://mirrors.tuna.tsinghua.edu.cn/alpine"
-        ALPINE_ARG="--build-arg ALPINE_MIRROR=${ALPINE_MIRROR}"
-        log_info "Alpine 镜像源: ${ALPINE_MIRROR}"
-    fi
-    
-    # 本地单架构构建使用 docker build (避免 buildx DNS 问题)
+    # 本地单架构构建使用 docker build
     if [ "$LOAD" = true ] && [[ "$PLATFORMS" != *","* ]]; then
         log_info "使用 docker build (本地构建)"
         docker build \
             ${TAGS} \
             ${BUILD_ARGS} \
-            ${ALPINE_ARG} \
+            --network host \
             --file gateway/Dockerfile \
             gateway/
     else
@@ -333,8 +281,7 @@ main() {
     log_info "CryptoClaw 多架构构建脚本"
     log_info "========================"
     
-    check_buildx
-    create_builder
+    check_docker
     build_image
     verify_image
     show_usage

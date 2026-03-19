@@ -56,7 +56,13 @@ WORKDIR /app
 ARG ALPINE_MIRROR=""
 RUN if [ -n "$ALPINE_MIRROR" ]; then \
         sed -i "s|https://dl-cdn.alpinelinux.org|${ALPINE_MIRROR}|g" /etc/apk/repositories; \
+        cat /etc/apk/repositories; \
     fi
+
+# Configure DNS for China (use public DNS servers to avoid v2rayA DNS issues)
+RUN echo "nameserver 223.5.5.5" > /etc/resolv.conf && \
+    echo "nameserver 119.29.29.29" >> /etc/resolv.conf && \
+    echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 
 # Install system dependencies for OpenClaw
 # - curl: HTTP requests and health checks
