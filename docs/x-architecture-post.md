@@ -15,7 +15,7 @@ Why? Because crypto users deserve:
 
 Your keys. Your data. Your profit.
 
-🚀 cryptoclaw.pro
+🚀 see more: https://github.com/franklili3/CryptoClaw/discussions/4
 
 ### Option 2: Problem-Solution Focus (275 chars)
 

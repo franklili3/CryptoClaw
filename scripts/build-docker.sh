@@ -198,6 +198,13 @@ create_builder() {
     
     BUILDER_NAME="cryptoclaw-builder"
     
+    # 本地单架构构建不需要 buildx，使用默认 builder 避免 DNS 问题
+    if [ "$LOAD" = true ] && [[ "$PLATFORMS" != *","* ]]; then
+        log_info "单架构本地构建，使用默认 docker builder"
+        docker buildx use default 2>/dev/null || true
+        return 0
+    fi
+    
     # 检查 builder 是否存在
     if docker buildx inspect $BUILDER_NAME &> /dev/null; then
         log_info "使用现有 builder: $BUILDER_NAME"
@@ -232,31 +239,40 @@ build_image() {
         TAGS="${TAGS} -t ${REGISTRY}/${IMAGE_NAME}:latest"
     fi
     
-    # 输出类型
-    if [ "$PUSH" = true ]; then
-        OUTPUT="--output type=registry"
-        log_info "构建后将推送到: ${REGISTRY}/${IMAGE_NAME}"
-    elif [ "$LOAD" = true ]; then
-        OUTPUT="--load"
-        log_info "构建后将加载到本地 Docker"
-    else
-        OUTPUT="--output type=docker"
-        log_info "仅构建，不推送"
-    fi
-    
     log_info "平台: ${PLATFORMS}"
     log_info "版本: ${VERSION}"
     log_info "Git SHA: ${GIT_SHA}"
     log_info "基础镜像: ${BASE_IMAGE}"
     
-    # 执行构建
-    docker buildx build \
-        --platform ${PLATFORMS} \
-        ${TAGS} \
-        ${BUILD_ARGS} \
-        ${OUTPUT} \
-        --file gateway/Dockerfile \
-        gateway/
+    # 本地单架构构建使用 docker build (避免 buildx DNS 问题)
+    if [ "$LOAD" = true ] && [[ "$PLATFORMS" != *","* ]]; then
+        log_info "使用 docker build (本地构建)"
+        docker build \
+            ${TAGS} \
+            ${BUILD_ARGS} \
+            --file gateway/Dockerfile \
+            gateway/
+    else
+        # 多架构或推送使用 buildx
+        if [ "$PUSH" = true ]; then
+            OUTPUT="--push"
+            log_info "构建后将推送到: ${REGISTRY}/${IMAGE_NAME}"
+        elif [ "$LOAD" = true ]; then
+            OUTPUT="--load"
+            log_info "构建后将加载到本地 Docker"
+        else
+            OUTPUT=""
+            log_info "仅构建，不推送"
+        fi
+        
+        docker buildx build \
+            --platform ${PLATFORMS} \
+            ${TAGS} \
+            ${BUILD_ARGS} \
+            ${OUTPUT} \
+            --file gateway/Dockerfile \
+            gateway/
+    fi
     
     log_success "构建完成!"
 }
