@@ -8,8 +8,6 @@
 # 注意: 如需访问 Binance 等需要代理的 API，请使用 host 网络模式:
 #   docker-compose -f docker-compose.yml -f docker-compose.hostnet.yml up -d
 
-version: '3.8'
-
 services:
   cryptoclaw:
     image: cryptoclaw/cryptoclaw:latest
@@ -25,7 +23,6 @@ services:
     environment:
       # 基础配置
       - NODE_ENV=production
-      - PORT=3000
       - TZ=${TZ:-Asia/Shanghai}
       
       # Telegram Bot 配置
@@ -44,7 +41,6 @@ services:
       # OpenClaw 配置
       - OPENCLAW_CONFIG=/app/config/openclaw.yaml
       - OPENCLAW_WORKSPACE=/app/workspace
-      - OPENCLAW_TOKEN=${OPENCLAW_TOKEN:-}
       
       # 交易所 API 配置 (可选，用于实盘交易)
       - BINANCE_API_KEY=${BINANCE_API_KEY:-}
@@ -53,12 +49,8 @@ services:
       - OKX_API_SECRET=${OKX_API_SECRET:-}
       - OKX_PASSPHRASE=${OKX_PASSPHRASE:-}
       
-      # Freqtrade 配置 (可选，用于与 Freqtrade 交互)
-      # Freqtrade 是开源软件，通过 JSON-RPC 或 REST API 交互
+      # Freqtrade 配置 (可选)
       - FREQTRADE_URL=${FREQTRADE_URL:-http://localhost:8080}
-      # JSON-RPC 配置 (可选，用于带密码保护的 Freqtrade)
-      - FREQTRADE_USERNAME=${FREQTRADE_USERNAME:-}
-      - FREQTRADE_PASSWORD=${FREQTRADE_PASSWORD:-}
     
     volumes:
       # 持久化数据
@@ -70,7 +62,7 @@ services:
       # - ./config/openclaw.yaml:/app/config/openclaw.yaml:ro
     
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:19001/health"]
       interval: 30s
       timeout: 10s
       retries: 3

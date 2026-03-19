@@ -95,7 +95,8 @@ RUN mkdir -p /app/workspace/skills \
     /app/workspace/config \
     /app/data/users \
     /app/logs \
-    && chown -R cryptoclaw:cryptoclaw /app/workspace /app/data /app/logs
+    /app/.openclaw \
+    && chown -R cryptoclaw:cryptoclaw /app/workspace /app/data /app/logs /app/.openclaw
 
 # Create default OpenClaw configuration
 RUN mkdir -p /app/config && \

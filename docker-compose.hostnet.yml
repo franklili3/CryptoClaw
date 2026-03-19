@@ -4,9 +4,7 @@
 #   docker-compose -f docker-compose.yml -f docker-compose.hostnet.yml up -d
 #
 # 注意: 使用 host 网络模式时，ports 配置会被忽略
-# 服务会直接使用宿主机的 3000 端口
-
-version: '3.8'
+# 服务会直接使用宿主机的 19001 端口
 
 services:
   cryptoclaw:
