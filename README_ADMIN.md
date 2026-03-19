@@ -10,8 +10,9 @@
 
 - [环境准备](#环境准备)
 - [本地开发](#本地开发)
-- [Docker 构建](#docker-构建)
+- [Docker 镜像构建](#docker-镜像构建)
 - [多架构构建](#多架构构建)
+- [桌面客户端构建](#桌面客户端构建)
 - [发布流程](#发布流程)
 - [版本管理](#版本管理)
 - [CI/CD 说明](#cicd-说明)
@@ -30,6 +31,16 @@
 | Git | 2.40+ | 版本控制 |
 | Node.js | 20+ | 本地开发 |
 | QEMU | 最新 | 跨平台模拟 |
+
+### 桌面客户端构建工具
+
+| 工具 | 版本 | 用途 |
+|------|------|------|
+| Electron | 28+ | 桌面应用框架 |
+| electron-builder | 24+ | 打包工具 |
+| macOS | 12+ | macOS 构建（需要 Xcode） |
+| Windows | 10+ | Windows 构建 |
+| Linux | Ubuntu 20.04+ | Linux 构建 |
 
 ### 安装 Buildx 和 QEMU
 
@@ -210,6 +221,309 @@ docker buildx bake release
 
 ---
 
+## 桌面客户端构建
+
+### 支持的平台
+
+| 平台 | 架构 | 输出格式 |
+|------|------|----------|
+| macOS (Intel) | x64 | dmg, zip |
+| macOS (Apple Silicon) | arm64 | dmg, zip |
+| Windows | x64 | nsis (安装包), portable (便携版) |
+| Linux | x64 | AppImage, deb, tar.gz |
+
+### 本地开发测试
+
+```bash
+cd client
+
+# 安装依赖
+npm install
+
+# 开发模式启动
+npm start
+
+# 热重载开发
+npm run dev
+```
+
+### 构建客户端
+
+#### macOS
+
+```bash
+cd client
+
+# 构建当前架构
+npm run build:mac
+
+# 构建指定架构
+npm run build:mac -- --x64    # Intel Mac
+npm run build:mac -- --arm64  # Apple Silicon
+
+# 构建通用二进制（Universal）
+npm run build:mac -- --universal
+```
+
+**输出位置：** `client/dist/`
+
+```
+dist/
+├── CryptoClaw-1.0.0.dmg           # Intel
+├── CryptoClaw-1.0.0-arm64.dmg     # Apple Silicon
+├── CryptoClaw-1.0.0-universal.dmg # 通用
+└── ...
+```
+
+#### Windows
+
+```bash
+cd client
+
+# 构建安装包
+npm run build:win
+
+# 构建便携版
+npm run build:win -- --win portable
+
+# 同时构建多个格式
+npm run build:win -- --win nsis,portable
+```
+
+**输出位置：** `client/dist/`
+
+```
+dist/
+├── CryptoClaw Setup 1.0.0.exe     # 安装包
+├── CryptoClaw 1.0.0.exe           # 便携版
+└── ...
+```
+
+#### Linux
+
+```bash
+cd client
+
+# 构建所有格式
+npm run build:linux
+
+# 构建指定格式
+npm run build:linux -- --linux AppImage
+npm run build:linux -- --linux deb
+npm run build:linux -- --linux tar.gz
+
+# 构建多个格式
+npm run build:linux -- --linux AppImage,deb
+```
+
+**输出位置：** `client/dist/`
+
+```
+dist/
+├── CryptoClaw-1.0.0.AppImage      # AppImage (通用)
+├── cryptoclaw_1.0.0_amd64.deb     # Debian/Ubuntu
+├── cryptoclaw-1.0.0.tar.gz        # 压缩包
+└── ...
+```
+
+### 构建所有平台
+
+```bash
+cd client
+
+# 构建所有平台（需要在对应平台上运行）
+npm run build
+
+# 或使用 electron-builder 直接构建
+npx electron-builder --mac --win --linux
+```
+
+### 代码签名
+
+#### macOS 签名
+
+需要 Apple Developer 证书：
+
+```bash
+# 设置环境变量
+export CSC_LINK=/path/to/certificate.p12
+export CSC_KEY_PASSWORD=your_password
+
+# 构建时会自动签名
+npm run build:mac
+```
+
+#### Windows 签名
+
+需要代码签名证书：
+
+```bash
+# 设置环境变量
+export CSC_LINK=/path/to/certificate.pfx
+export CSC_KEY_PASSWORD=your_password
+
+# 构建时会自动签名
+npm run build:win
+```
+
+### 自动更新配置
+
+客户端支持自动更新，配置在 `electron-builder.yml`：
+
+```yaml
+publish:
+  provider: github
+  owner: franklili3
+  repo: CryptoClaw
+  releaseType: release
+
+autoUpdate:
+  checkUpdateOnStart: true
+  autoDownload: true
+```
+
+### 测试客户端
+
+#### 功能测试清单
+
+- [ ] 应用启动正常
+- [ ] 窗口显示正确
+- [ ] 菜单功能正常
+- [ ] 系统托盘图标
+- [ ] 自动更新检测
+- [ ] 快捷键功能
+- [ ] 文件拖放
+- [ ] 通知功能
+- [ ] 剪贴板操作
+
+#### 手动测试命令
+
+```bash
+# macOS
+open dist/CryptoClaw-1.0.0.dmg
+
+# Windows (PowerShell)
+Start-Process "dist\CryptoClaw Setup 1.0.0.exe"
+
+# Linux
+./dist/CryptoClaw-1.0.0.AppImage
+```
+
+#### 自动化测试
+
+```bash
+cd client
+
+# 运行单元测试
+npm test
+
+# 运行 E2E 测试（如果配置了）
+npm run e2e
+```
+
+### 发布客户端
+
+#### 方式一：自动发布（推荐）
+
+推送标签后，GitHub Actions 会自动构建并发布到 GitHub Releases。
+
+#### 方式二：手动发布
+
+```bash
+cd client
+
+# 构建并发布到 GitHub
+npm run build:publish
+
+# 或使用 electron-builder
+npx electron-builder --publish always
+```
+
+#### 方式三：手动上传
+
+1. 构建客户端：
+   ```bash
+   npm run build
+   ```
+
+2. 手动上传到 GitHub Releases：
+   ```bash
+   gh release upload v1.0.0 \
+     dist/CryptoClaw-1.0.0.dmg \
+     dist/CryptoClaw-1.0.0-arm64.dmg \
+     dist/CryptoClaw Setup 1.0.0.exe \
+     dist/CryptoClaw-1.0.0.AppImage
+   ```
+
+### 客户端构建配置
+
+配置文件：`client/electron-builder.yml`
+
+```yaml
+appId: pro.cryptoclaw.client
+productName: CryptoClaw
+
+# macOS 配置
+mac:
+  category: public.app-category.finance
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+
+# Windows 配置
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+
+# Linux 配置
+linux:
+  category: Office
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+```
+
+### 常见问题
+
+#### macOS 构建失败
+
+```bash
+# 检查 Xcode 命令行工具
+xcode-select --install
+
+# 清理缓存
+rm -rf ~/Library/Caches/electron
+rm -rf ~/Library/Caches/electron-builder
+```
+
+#### Windows 构建失败
+
+```powershell
+# 以管理员身份运行 PowerShell
+# 安装 Windows Build Tools
+npm install -g windows-build-tools
+```
+
+#### Linux 依赖问题
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install -y \
+  libgtk-3-0 libnotify4 libnss3 libxss1 \
+  libxtst6 xdg-utils libatspi2.0-0 libuuid1 \
+  libsecret-1-0 libgbm1
+
+# Fedora
+sudo dnf install -y \
+  gtk3 libnotify nss libXScrnSaver libXtst \
+  xdg-utils at-spi2-atk libuuid libsecret
+```
+
+---
+
 ## 发布流程
 
 ### 1. 准备发布
@@ -330,7 +644,14 @@ git tag v1.1.0-rc.1
 
 ## CI/CD 说明
 
-### GitHub Actions 工作流
+### 工作流文件
+
+| 文件 | 用途 |
+|------|------|
+| `.github/workflows/docker-build.yml` | Docker 镜像构建 |
+| `.github/workflows/client-build.yml` | 桌面客户端构建 |
+
+### Docker 镜像工作流
 
 位置：`.github/workflows/docker-build.yml`
 
@@ -364,6 +685,49 @@ platforms:
 ```bash
 # 使用 gh CLI 触发
 gh workflow run docker-build.yml -f push_image=true
+
+# 或在 GitHub 网页上点击 "Run workflow"
+```
+
+### 桌面客户端工作流
+
+位置：`.github/workflows/client-build.yml`（需要创建）
+
+#### 触发条件
+
+| 事件 | 行为 |
+|------|------|
+| Push tag (v*) | 构建并发布客户端 |
+| Push to main | 仅测试构建 |
+| Manual | 手动触发构建 |
+
+#### 构建矩阵
+
+```yaml
+strategy:
+  matrix:
+    include:
+      - os: macos-latest
+        platform: mac
+      - os: windows-latest
+        platform: win
+      - os: ubuntu-latest
+        platform: linux
+```
+
+#### 生成的产物
+
+| 平台 | 产物 |
+|------|------|
+| macOS | `CryptoClaw-{version}.dmg`, `CryptoClaw-{version}-arm64.dmg` |
+| Windows | `CryptoClaw Setup {version}.exe`, `CryptoClaw {version}.exe` |
+| Linux | `CryptoClaw-{version}.AppImage`, `cryptoclaw_{version}_amd64.deb` |
+
+#### 手动触发客户端构建
+
+```bash
+# 使用 gh CLI 触发
+gh workflow run client-build.yml
 
 # 或在 GitHub 网页上点击 "Run workflow"
 ```
@@ -430,23 +794,39 @@ docker run --rm --platform linux/arm64 alpine uname -m
 
 ### 发布前检查
 
+**Docker 镜像：**
 - [ ] 所有测试通过
-- [ ] 版本号已更新
+- [ ] 版本号已更新 (gateway/package.json)
 - [ ] CHANGELOG 已更新
 - [ ] README 文档已更新
 - [ ] Docker Hub 凭据有效
 - [ ] 本地多架构构建成功
 
+**桌面客户端：**
+- [ ] 客户端版本号已更新 (client/package.json)
+- [ ] 本地客户端测试通过
+- [ ] 代码签名证书有效（macOS/Windows）
+- [ ] electron-builder.yml 配置正确
+
 ### 发布后检查
 
+**Docker 镜像：**
 - [ ] Docker Hub 镜像可拉取
-- [ ] GitHub Release 已创建
-- [ ] 安装脚本可正常工作
 - [ ] amd64 和 arm64 镜像都可用
+- [ ] 安装脚本可正常工作
+
+**桌面客户端：**
+- [ ] GitHub Release 已创建
+- [ ] macOS dmg 文件可下载
+- [ ] Windows exe 文件可下载
+- [ ] Linux AppImage 可下载
+- [ ] 自动更新功能正常
 
 ---
 
 ## 常用命令速查
+
+### Docker 镜像
 
 ```bash
 # 快速构建（本地测试）
@@ -466,12 +846,50 @@ docker builder prune
 
 # 登录 Docker Hub
 docker login
+```
 
+### 桌面客户端
+
+```bash
+# 开发模式
+cd client && npm start
+
+# 构建 macOS
+npm run build:mac
+
+# 构建 Windows
+npm run build:win
+
+# 构建 Linux
+npm run build:linux
+
+# 构建所有平台
+npm run build
+
+# 构建并发布
+npm run build:publish
+```
+
+### Git 和 CI/CD
+
+```bash
 # 创建并推送标签
 git tag v1.0.0 && git push origin v1.0.0
 
 # 查看 CI 状态
 gh run list --limit 5
+
+# 手动触发 Docker 构建
+gh workflow run docker-build.yml
+
+# 手动触发客户端构建
+gh workflow run client-build.yml
+
+# 创建 GitHub Release
+gh release create v1.0.0 --title "v1.0.0" --notes "Release notes"
+
+# 上传客户端到 Release
+gh release upload v1.0.0 dist/*
 ```
 
 ---
