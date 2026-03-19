@@ -244,12 +244,21 @@ build_image() {
     log_info "Git SHA: ${GIT_SHA}"
     log_info "基础镜像: ${BASE_IMAGE}"
     
+    # Alpine 镜像源（国内用户）
+    ALPINE_ARG=""
+    if [ "$USE_CHINA_MIRROR" = true ]; then
+        ALPINE_MIRROR="https://mirrors.tuna.tsinghua.edu.cn/alpine"
+        ALPINE_ARG="--build-arg ALPINE_MIRROR=${ALPINE_MIRROR}"
+        log_info "Alpine 镜像源: ${ALPINE_MIRROR}"
+    fi
+    
     # 本地单架构构建使用 docker build (避免 buildx DNS 问题)
     if [ "$LOAD" = true ] && [[ "$PLATFORMS" != *","* ]]; then
         log_info "使用 docker build (本地构建)"
         docker build \
             ${TAGS} \
             ${BUILD_ARGS} \
+            ${ALPINE_ARG} \
             --file gateway/Dockerfile \
             gateway/
     else

@@ -52,6 +52,12 @@ LABEL org.opencontainers.image.source="https://github.com/franklili3/CryptoClaw"
 
 WORKDIR /app
 
+# Configure Alpine mirror for China (auto-detect via build arg)
+ARG ALPINE_MIRROR=""
+RUN if [ -n "$ALPINE_MIRROR" ]; then \
+        sed -i "s|https://dl-cdn.alpinelinux.org|${ALPINE_MIRROR}|g" /etc/apk/repositories; \
+    fi
+
 # Install system dependencies for OpenClaw
 # - curl: HTTP requests and health checks
 # - ca-certificates: HTTPS support
