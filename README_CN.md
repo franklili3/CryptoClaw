@@ -60,10 +60,33 @@ irm https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install
 
 安装程序会自动：
 1. ✅ 检测操作系统和 CPU 架构
-2. ✅ 安装 Docker（如果未安装）
-3. ✅ 拉取正确的多架构 Docker 镜像
-4. ✅ 设置配置文件
-5. ✅ 创建管理脚本
+2. ✅ 检测网络区域（中国大陆自动使用镜像加速）
+3. ✅ 安装 Docker（如果未安装）
+4. ✅ 拉取正确的多架构 Docker 镜像
+5. ✅ 设置配置文件
+6. ✅ 创建管理脚本
+
+### 🇨🇳 国内镜像加速
+
+安装脚本会自动检测网络环境：
+- **中国大陆用户** → 使用 `hub.dockermirror.com` 镜像加速
+- **海外用户** → 使用 Docker Hub 官方源
+
+也可以手动指定镜像源：
+
+```bash
+# 国内用户手动拉取（如果自动检测失败）
+docker pull hub.dockermirror.com/cryptoclaw/cryptoclaw:latest
+docker tag hub.dockermirror.com/cryptoclaw/cryptoclaw:latest cryptoclaw/cryptoclaw:latest
+
+# 或配置 Docker 镜像加速器
+# 编辑 /etc/docker/daemon.json
+{
+  "registry-mirrors": [
+    "https://hub.dockermirror.com"
+  ]
+}
+```
 
 ### 方式二：手动安装
 
