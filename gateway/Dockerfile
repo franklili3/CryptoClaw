@@ -59,10 +59,12 @@ RUN if [ -n "$ALPINE_MIRROR" ]; then \
         cat /etc/apk/repositories; \
     fi
 
-# Configure DNS for China (use public DNS servers to avoid v2rayA DNS issues)
-RUN echo "nameserver 223.5.5.5" > /etc/resolv.conf && \
-    echo "nameserver 119.29.29.29" >> /etc/resolv.conf && \
-    echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+# Note: DNS configuration must be done at Docker daemon level
+# For v2rayA DNS issues, configure /etc/docker/daemon.json:
+# {
+#   "dns": ["223.5.5.5", "119.29.29.29", "8.8.8.8"]
+# }
+# Then restart Docker: sudo systemctl restart docker
 
 # Install system dependencies for OpenClaw
 # - curl: HTTP requests and health checks
