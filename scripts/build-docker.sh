@@ -203,13 +203,10 @@ build_image() {
     # 本地单架构构建使用 docker build
     if [ "$LOAD" = true ] && [[ "$PLATFORMS" != *","* ]]; then
         log_info "使用 docker build (本地构建)"
-        # 使用 --dns 参数配置 DNS (解决 v2rayA 透明代理 DNS 问题)
+        # 使用 --network host 和 BuildKit 内联配置
         docker build \
             ${TAGS} \
             ${BUILD_ARGS} \
-            --dns 223.5.5.5 \
-            --dns 119.29.29.29 \
-            --dns 8.8.8.8 \
             --network host \
             --file gateway/Dockerfile \
             gateway/
