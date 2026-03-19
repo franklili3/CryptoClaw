@@ -52,9 +52,12 @@ services:
       - OKX_API_SECRET=${OKX_API_SECRET:-}
       - OKX_PASSPHRASE=${OKX_PASSPHRASE:-}
       
-      # Freqtrade 配置 (可选)
-      - FREQTRADE_API_URL=${FREQTRADE_API_URL:-}
-      - FREQTRADE_API_KEY=${FREQTRADE_API_KEY:-}
+      # Freqtrade 配置 (可选，用于与 Freqtrade 交互)
+      # Freqtrade 是开源软件，通过 JSON-RPC 或 REST API 交互
+      - FREQTRADE_URL=${FREQTRADE_URL:-http://localhost:8080}
+      # JSON-RPC 配置 (可选，用于带密码保护的 Freqtrade)
+      - FREQTRADE_USERNAME=${FREQTRADE_USERNAME:-}
+      - FREQTRADE_PASSWORD=${FREQTRADE_PASSWORD:-}
     
     volumes:
       # 持久化数据
