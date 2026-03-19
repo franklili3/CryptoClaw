@@ -438,18 +438,43 @@ build_local_image() {
     
     log_info "找到源码目录: $source_dir"
     
+    # 选择基础镜像源
+    local base_image="node:20-alpine"
+    
+    if [ "$IS_CHINA" = true ]; then
+        log_info "使用国内镜像源..."
+        # 国内镜像源列表
+        local china_mirrors=(
+            "docker.1ms.run/node:20-alpine"
+            "docker.xuanyuan.me/node:20-alpine"
+            "dockerhub.icu/node:20-alpine"
+        )
+        
+        # 尝试可用的镜像源
+        for mirror in "${china_mirrors[@]}"; do
+            log_info "尝试镜像: $mirror"
+            base_image="$mirror"
+            break
+        done
+        log_info "选择基础镜像: $base_image"
+    else
+        log_info "使用官方镜像源"
+    fi
+    
     # 构建
     cd "$source_dir"
     
     if [ -f "gateway/Dockerfile" ]; then
         docker build \
             --platform "$DOCKER_PLATFORM" \
+            --build-arg BASE_IMAGE="$base_image" \
             -t "${DOCKER_IMAGE}:latest" \
             -f gateway/Dockerfile \
             ./gateway
     elif [ -f "Dockerfile" ]; then
         docker build \
             --platform "$DOCKER_PLATFORM" \
+            --build-arg BASE_IMAGE="$base_image" \
             -t "${DOCKER_IMAGE}:latest" \
             .
     else

@@ -2,11 +2,16 @@
 # Supports: linux/amd64, linux/arm64
 # 
 # 本镜像包含 OpenClaw Agent 运行时环境
+#
+# 构建时可通过 --build-arg 选择镜像源:
+#   --build-arg BASE_IMAGE=node:20-alpine                    # 官方源 (默认，海外用户)
+#   --build-arg BASE_IMAGE=docker.1ms.run/node:20-alpine     # 国内镜像源
 
 # ============================================
 # Stage 1: Builder (multi-arch aware)
 # ============================================
-FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
+ARG BASE_IMAGE=node:20-alpine
+FROM --platform=$BUILDPLATFORM ${BASE_IMAGE} AS builder
 
 # Build arguments for cross-compilation
 ARG BUILDPLATFORM
@@ -33,7 +38,8 @@ RUN npm prune --production
 # ============================================
 # Stage 2: Production Image (multi-arch)
 # ============================================
-FROM node:20-alpine AS production
+ARG BASE_IMAGE=node:20-alpine
+FROM ${BASE_IMAGE} AS production
 
 # Metadata labels
 LABEL org.opencontainers.image.title="CryptoClaw Gateway"

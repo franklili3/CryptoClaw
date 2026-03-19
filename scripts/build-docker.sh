@@ -6,6 +6,7 @@
 #   ./build-docker.sh --multi      # 构建多架构 (amd64 + arm64)
 #   ./build-docker.sh --push       # 构建并推送到 Docker Hub
 #   ./build-docker.sh --local      # 构建并加载到本地 Docker
+#   ./build-docker.sh --china      # 使用国内镜像源
 
 set -e
 
@@ -25,6 +26,15 @@ GIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')
 PLATFORMS="linux/amd64"
 PUSH=false
 LOAD=false
+USE_CHINA_MIRROR=false
+
+# 镜像源配置
+OFFICIAL_BASE="node:20-alpine"
+CHINA_MIRRORS=(
+    "docker.1ms.run/node:20-alpine"
+    "docker.xuanyuan.me/node:20-alpine"
+    "dockerhub.icu/node:20-alpine"
+)
 
 # 日志函数
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
@@ -45,16 +55,71 @@ show_help() {
     echo "  --local        构建并加载到本地 Docker"
     echo "  --arm64        只构建 ARM64"
     echo "  --amd64        只构建 AMD64"
+    echo "  --china        使用国内镜像源"
     echo "  --registry R   指定镜像仓库 (默认: cryptoclaw)"
     echo "  --version V    指定版本标签 (默认: git tag 或 'dev')"
     echo "  --help         显示此帮助信息"
     echo ""
+    echo "镜像源选择:"
+    echo "  自动检测: 脚本会自动检测网络环境，选择最优镜像源"
+    echo "  --china:  强制使用国内镜像源 (适用于国内网络)"
+    echo ""
     echo "示例:"
+    echo "  $0 --local                     # 本地构建 (自动选择镜像源)"
+    echo "  $0 --local --china             # 本地构建 (强制国内源)"
     echo "  $0 --multi --push              # 多架构构建并推送"
-    echo "  $0 --local                     # 本地构建测试"
-    echo "  $0 --arm64 --local             # 本地 ARM64 构建"
     echo "  VERSION=1.0.0 $0 --multi       # 指定版本"
     echo ""
+}
+
+# 检测是否在中国大陆
+detect_china_region() {
+    # 方法1：检查时区
+    if [ -f /etc/timezone ] && grep -q "Asia/Shanghai\|China\|Beijing" /etc/timezone 2>/dev/null; then
+        return 0
+    fi
+    
+    # 方法2：检查语言环境
+    if echo "$LANG" | grep -qi "zh_CN\|zh_CN.UTF-8" 2>/dev/null; then
+        return 0
+    fi
+    
+    # 方法3：尝试访问 Google（不可用则认为在中国）
+    if ! curl -s --max-time 3 https://www.google.com > /dev/null 2>&1; then
+        return 0
+    fi
+    
+    return 1
+}
+
+# 获取基础镜像
+get_base_image() {
+    if [ "$USE_CHINA_MIRROR" = true ]; then
+        log_info "使用国内镜像源"
+        # 尝试国内镜像源
+        for mirror in "${CHINA_MIRRORS[@]}"; do
+            log_info "尝试镜像: $mirror"
+            if curl -s --max-time 5 "https://${mirror%%/*}/v2/" > /dev/null 2>&1; then
+                BASE_IMAGE="$mirror"
+                log_success "选择镜像源: $BASE_IMAGE"
+                return 0
+            fi
+        done
+        # 如果都不可用，使用第一个
+        BASE_IMAGE="${CHINA_MIRRORS[0]}"
+        log_warning "无法测试镜像源连通性，使用默认: $BASE_IMAGE"
+    else
+        # 自动检测
+        if detect_china_region; then
+            log_info "检测到中国大陆网络环境"
+            USE_CHINA_MIRROR=true
+            get_base_image
+            return
+        else
+            log_info "使用官方镜像源"
+            BASE_IMAGE="$OFFICIAL_BASE"
+        fi
+    fi
 }
 
 # 解析参数
@@ -81,6 +146,10 @@ while [[ $# -gt 0 ]]; do
         --amd64)
             PLATFORMS="linux/amd64"
             LOAD=true
+            shift
+            ;;
+        --china)
+            USE_CHINA_MIRROR=true
             shift
             ;;
         --registry)
@@ -151,8 +220,11 @@ build_image() {
         exit 1
     fi
     
+    # 获取基础镜像
+    get_base_image
+    
     # 构建参数
-    BUILD_ARGS="--build-arg VERSION=${VERSION} --build-arg GIT_SHA=${GIT_SHA}"
+    BUILD_ARGS="--build-arg VERSION=${VERSION} --build-arg GIT_SHA=${GIT_SHA} --build-arg BASE_IMAGE=${BASE_IMAGE}"
     
     # 标签
     TAGS="-t ${REGISTRY}/${IMAGE_NAME}:${VERSION}"
@@ -175,6 +247,7 @@ build_image() {
     log_info "平台: ${PLATFORMS}"
     log_info "版本: ${VERSION}"
     log_info "Git SHA: ${GIT_SHA}"
+    log_info "基础镜像: ${BASE_IMAGE}"
     
     # 执行构建
     docker buildx build \
@@ -182,8 +255,6 @@ build_image() {
         ${TAGS} \
         ${BUILD_ARGS} \
         ${OUTPUT} \
-        --cache-from type=registry,ref=${REGISTRY}/${IMAGE_NAME}:buildcache \
-        --cache-to type=registry,ref=${REGISTRY}/${IMAGE_NAME}:buildcache,mode=max \
         --file gateway/Dockerfile \
         gateway/
     
