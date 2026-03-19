@@ -10,6 +10,21 @@
 
 set -e
 
+# 查找 Docker 命令路径
+if [ -x "/snap/bin/docker" ]; then
+    DOCKER="/snap/bin/docker"
+elif command -v docker &> /dev/null; then
+    DOCKER="docker"
+else
+    echo "Error: Docker not found"
+    exit 1
+fi
+
+# 使用找到的 Docker
+docker() {
+    "$DOCKER" "$@"
+}
+
 # 颜色定义
 RED='\033[0;31m'
 GREEN='\033[0;32m'

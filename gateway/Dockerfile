@@ -107,7 +107,7 @@ agents:\n\
     - id: cryptoclaw\n\
       name: CryptoClaw\n\
       workspace: /app/workspace\n\
-      model: openai/gpt-4\n\
+      model: ${LLM_PROVIDER}/${LLM_MODEL}\n\
       default: true\n\
 \n\
 bindings:\n\
@@ -126,28 +126,43 @@ llm:\n\
   provider: ${LLM_PROVIDER:-openai}\n\
   apiKey: ${LLM_API_KEY}\n\
   model: ${LLM_MODEL:-gpt-4}\n\
+  baseUrl: ${LLM_BASE_URL:-}\n\
+\n\
+gateway:\n\
+  mode: local\n\
+  bind: lan\n\
+  auth:\n\
+    mode: token\n\
+    token: ${OPENCLAW_TOKEN:-}\n\
 ' > /app/config/openclaw.yaml && \
     chown cryptoclaw:cryptoclaw /app/config/openclaw.yaml
 
 # Copy default skills
 COPY --chown=cryptoclaw:cryptoclaw skills/ /app/workspace/skills/
 
+# Copy startup script
+COPY --chown=cryptoclaw:cryptoclaw start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
 # Switch to non-root user
 USER cryptoclaw
 
 # Environment variables
 ENV NODE_ENV=production \
-    PORT=3000 \
     TZ=UTC \
     OPENCLAW_CONFIG=/app/config/openclaw.yaml \
-    OPENCLAW_WORKSPACE=/app/workspace
+    OPENCLAW_WORKSPACE=/app/workspace \
+    OPENCLAW_STATE_DIR=/app/.openclaw
 
 # Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+# Health check (OpenClaw Gateway health endpoint)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:19001/health || exit 1
 
-# Start application
-CMD ["node", "dist/server.js"]
+# Expose OpenClaw Gateway port
+EXPOSE 19001
+
+# Start OpenClaw Gateway
+CMD ["/app/start.sh"]
