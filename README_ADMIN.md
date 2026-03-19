@@ -123,16 +123,27 @@ docker images | grep cryptoclaw
 cd gateway
 docker build -t cryptoclaw/cryptoclaw:dev .
 
-# 运行容器
+# 运行容器（普通模式）
 docker run -d \
   --name cryptoclaw-dev \
   -p 3000:3000 \
   -e NODE_ENV=development \
   cryptoclaw/cryptoclaw:dev
 
+# 运行容器（使用宿主机网络，适用于需要代理访问 Binance 等场景）
+docker run -d \
+  --network host \
+  --name cryptoclaw-dev \
+  -e NODE_ENV=development \
+  -e TELEGRAM_BOT_TOKEN=your_token \
+  -e LLM_API_KEY=your_key \
+  cryptoclaw/cryptoclaw:dev
+
 # 查看日志
 docker logs -f cryptoclaw-dev
 ```
+
+> **注意**：如果需要访问 Binance 等需要代理的交易所 API，请使用 `--network host` 模式运行容器，这样容器会使用宿主机的网络（包括代理设置）。
 
 ### 构建参数
 
@@ -846,6 +857,14 @@ docker builder prune
 
 # 登录 Docker Hub
 docker login
+
+# 运行容器（使用宿主机网络，支持代理访问 Binance）
+docker run -d \
+  --network host \
+  --name cryptoclaw \
+  -e TELEGRAM_BOT_TOKEN=your_token \
+  -e LLM_API_KEY=your_key \
+  cryptoclaw/cryptoclaw:latest
 ```
 
 ### 桌面客户端
