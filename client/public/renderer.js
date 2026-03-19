@@ -7,6 +7,13 @@
 // 全局状态
 let currentKeyMode = 'llm';
 let serviceRunning = false;
+let gatewayStatus = {
+  connected: false,
+  host: '',
+  port: 0,
+  hasToken: false,
+  hasDeviceToken: false
+};
 
 /**
  * 初始化应用
@@ -40,6 +47,20 @@ async function init() {
   window.electronAPI.onUpdateAvailable((info) => {
     showToast('发现新版本: ' + info.version, 'info');
   });
+  
+  // 监听 Gateway 状态变化
+  window.electronAPI.onGatewayStatusChanged((status) => {
+    gatewayStatus = status;
+    updateGatewayStatusUI();
+  });
+  
+  // 加载 Gateway 状态
+  try {
+    gatewayStatus = await window.electronAPI.getGatewayStatus();
+    updateGatewayStatusUI();
+  } catch (e) {
+    console.error('Failed to get gateway status:', e);
+  }
 }
 
 /**
@@ -407,6 +428,89 @@ function showToast(message, type = 'info') {
   setTimeout(() => {
     toast.remove();
   }, 3000);
+}
+
+// ========== Gateway 配对功能 ==========
+
+/**
+ * 更新 Gateway 状态 UI
+ */
+function updateGatewayStatusUI() {
+  const statusDot = document.getElementById('gateway-status-dot');
+  const statusText = document.getElementById('gateway-status-text');
+  const pairBtn = document.getElementById('pair-btn');
+  
+  if (statusDot && statusText) {
+    if (gatewayStatus.connected) {
+      statusDot.classList.add('running');
+      statusText.textContent = '已连接';
+      if (pairBtn) pairBtn.textContent = '断开连接';
+    } else {
+      statusDot.classList.remove('running');
+      statusText.textContent = gatewayStatus.hasDeviceToken ? '已配对，未连接' : '未连接';
+      if (pairBtn) pairBtn.textContent = gatewayStatus.hasToken ? '重新配对' : '一键配对';
+    }
+  }
+}
+
+/**
+ * 一键配对
+ */
+async function oneClickPair() {
+  const host = document.getElementById('gateway-host')?.value || '127.0.0.1';
+  const port = document.getElementById('gateway-port')?.value || '19001';
+  const token = document.getElementById('gateway-token')?.value;
+  
+  if (!token) {
+    showToast('请输入 Gateway Token', 'error');
+    return;
+  }
+  
+  try {
+    showToast('正在配对...', 'info');
+    
+    const result = await window.electronAPI.oneClickPair(host, parseInt(port), token);
+    
+    if (result.success) {
+      showToast('配对成功！', 'success');
+      gatewayStatus.connected = true;
+      gatewayStatus.hasToken = true;
+      gatewayStatus.hasDeviceToken = true;
+      updateGatewayStatusUI();
+      
+      // 跳转到仪表盘
+      showPage('dashboard');
+    } else {
+      showToast(`配对失败: ${result.error}`, 'error');
+    }
+  } catch (error) {
+    showToast(`配对失败: ${error.message}`, 'error');
+  }
+}
+
+/**
+ * 断开 Gateway
+ */
+async function disconnectGateway() {
+  try {
+    await window.electronAPI.disconnectGateway();
+    gatewayStatus.connected = false;
+    updateGatewayStatusUI();
+    showToast('已断开连接', 'success');
+  } catch (error) {
+    showToast(`断开失败: ${error.message}`, 'error');
+  }
+}
+
+/**
+ * 配对按钮点击处理
+ */
+async function handlePairButton() {
+  if (gatewayStatus.connected) {
+    await disconnectGateway();
+  } else {
+    await oneClickPair();
+  }
 }
 
 // 页面加载完成后初始化

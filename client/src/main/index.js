@@ -33,6 +33,8 @@ const secureStore = new Store({
 let mainWindow = null;
 let tray = null;
 let isQuitting = false;
+let gatewayConnection = null;
+let isGatewayConnected = false;
 
 // 配置目录
 const CONFIG_DIR = path.join(app.getPath('home'), '.cryptoclaw');
@@ -372,6 +374,250 @@ function initIpcHandlers() {
   ipcMain.handle('get-version', () => {
     return app.getVersion();
   });
+
+  // ========== Gateway 连接与配对 ==========
+  
+  // 连接 Gateway
+  ipcMain.handle('connect-gateway', async (event, { host, port, token }) => {
+    const WebSocket = require('ws');
+    
+    return new Promise((resolve, reject) => {
+      try {
+        const wsUrl = `ws://${host}:${port}`;
+        log.info(`Connecting to Gateway: ${wsUrl}`);
+        
+        const ws = new WebSocket(wsUrl);
+        
+        ws.on('open', () => {
+          log.info('WebSocket connected, sending auth...');
+          
+          // 发送 Gateway Token 认证
+          ws.send(JSON.stringify({
+            type: 'auth',
+            token: token
+          }));
+        });
+        
+        ws.on('message', (data) => {
+          try {
+            const msg = JSON.parse(data.toString());
+            log.info('Gateway message:', msg.type || msg.method);
+            
+            if (msg.type === 'auth:success' || msg.ok === true) {
+              gatewayConnection = ws;
+              isGatewayConnected = true;
+              
+              // 保存 Gateway Token
+              secureStore.set('gatewayToken', token);
+              secureStore.set('gatewayHost', host);
+              secureStore.set('gatewayPort', port);
+              
+              // 通知渲染器
+              mainWindow?.webContents.send('gateway-status-changed', { connected: true });
+              
+              resolve({ success: true, message: 'Connected to Gateway' });
+            } else if (msg.type === 'auth:failed' || msg.error) {
+              log.error('Auth failed:', msg.error);
+              ws.close();
+              reject(new Error(msg.error?.message || 'Authentication failed'));
+            }
+          } catch (e) {
+            log.error('Parse message error:', e);
+          }
+        });
+        
+        ws.on('error', (err) => {
+          log.error('WebSocket error:', err);
+          reject(new Error(`Connection failed: ${err.message}`));
+        });
+        
+        ws.on('close', () => {
+          log.info('WebSocket closed');
+          gatewayConnection = null;
+          isGatewayConnected = false;
+          mainWindow?.webContents.send('gateway-status-changed', { connected: false });
+        });
+        
+        // 超时
+        setTimeout(() => {
+          if (!isGatewayConnected) {
+            ws.close();
+            reject(new Error('Connection timeout'));
+          }
+        }, 10000);
+        
+      } catch (error) {
+        log.error('Connect error:', error);
+        reject(error);
+      }
+    });
+  });
+
+  // 请求配对
+  ipcMain.handle('request-pairing', async () => {
+    if (!gatewayConnection || !isGatewayConnected) {
+      throw new Error('Not connected to Gateway');
+    }
+    
+    const clientId = secureStore.get('clientId') || crypto.randomUUID();
+    secureStore.set('clientId', clientId);
+    
+    return new Promise((resolve, reject) => {
+      const requestId = crypto.randomUUID();
+      
+      log.info(`Requesting pairing for client: ${clientId}`);
+      
+      // 发送配对请求
+      gatewayConnection.send(JSON.stringify({
+        jsonrpc: '2.0',
+        id: requestId,
+        method: 'node.pair.request',
+        params: {
+          nodeId: clientId,
+          silent: true  // 静默模式，暗示自动批准
+        }
+      }));
+      
+      // 监听响应
+      const handler = (data) => {
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg.id === requestId) {
+            gatewayConnection.off('message', handler);
+            if (msg.error) {
+              log.error('Pairing request error:', msg.error);
+              reject(new Error(msg.error.message || 'Pairing request failed'));
+            } else {
+              log.info('Pairing request accepted:', msg.result);
+              resolve(msg.result);
+            }
+          }
+        } catch (e) {
+          log.error('Parse pairing response error:', e);
+        }
+      };
+      
+      gatewayConnection.on('message', handler);
+      
+      // 超时
+      setTimeout(() => {
+        gatewayConnection.off('message', handler);
+        reject(new Error('Pairing request timeout'));
+      }, 15000);
+    });
+  });
+
+  // 批准配对
+  ipcMain.handle('approve-pairing', async (event, { requestId }) => {
+    if (!gatewayConnection || !isGatewayConnected) {
+      throw new Error('Not connected to Gateway');
+    }
+    
+    return new Promise((resolve, reject) => {
+      const callId = crypto.randomUUID();
+      
+      log.info(`Approving pairing request: ${requestId}`);
+      
+      gatewayConnection.send(JSON.stringify({
+        jsonrpc: '2.0',
+        id: callId,
+        method: 'node.pair.approve',
+        params: { requestId }
+      }));
+      
+      const handler = (data) => {
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg.id === callId) {
+            gatewayConnection.off('message', handler);
+            if (msg.error) {
+              log.error('Approve error:', msg.error);
+              reject(new Error(msg.error.message || 'Approve failed'));
+            } else {
+              // 保存 Device Token
+              if (msg.result?.deviceToken) {
+                secureStore.set('deviceToken', msg.result.deviceToken);
+                log.info('Device token saved');
+              }
+              resolve(msg.result);
+            }
+          }
+        } catch (e) {
+          log.error('Parse approve response error:', e);
+        }
+      };
+      
+      gatewayConnection.on('message', handler);
+      
+      setTimeout(() => {
+        gatewayConnection.off('message', handler);
+        reject(new Error('Approve timeout'));
+      }, 15000);
+    });
+  });
+
+  // 一键配对（组合以上步骤）
+  ipcMain.handle('one-click-pair', async (event, { host, port, token }) => {
+    try {
+      log.info('Starting one-click pairing...');
+      
+      // 1. 连接 Gateway
+      await ipcMain.invoke('connect-gateway', { host, port, token });
+      log.info('Gateway connected');
+      
+      // 2. 请求配对
+      const pairResult = await ipcMain.invoke('request-pairing');
+      log.info('Pairing requested:', pairResult);
+      
+      // 3. 自动批准
+      if (pairResult?.requestId || pairResult?.pending?.requestId) {
+        const requestId = pairResult.requestId || pairResult.pending.requestId;
+        const approveResult = await ipcMain.invoke('approve-pairing', { requestId });
+        log.info('Pairing approved:', approveResult);
+        
+        return {
+          success: true,
+          deviceToken: approveResult?.deviceToken,
+          message: 'Pairing completed successfully'
+        };
+      } else {
+        // 可能已经配对过了
+        return {
+          success: true,
+          message: 'Already paired or pairing not required'
+        };
+      }
+    } catch (error) {
+      log.error('One-click pair error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  });
+
+  // 获取 Gateway 状态
+  ipcMain.handle('get-gateway-status', async () => {
+    return {
+      connected: isGatewayConnected,
+      host: secureStore.get('gatewayHost'),
+      port: secureStore.get('gatewayPort'),
+      hasToken: !!secureStore.get('gatewayToken'),
+      hasDeviceToken: !!secureStore.get('deviceToken'),
+      clientId: secureStore.get('clientId')
+    };
+  });
+
+  // 断开 Gateway
+  ipcMain.handle('disconnect-gateway', async () => {
+    if (gatewayConnection) {
+      gatewayConnection.close();
+      gatewayConnection = null;
+      isGatewayConnected = false;
+      mainWindow?.webContents.send('gateway-status-changed', { connected: false });
+    }
+    return { success: true };
+  });
 }
 
 /**
@@ -512,6 +758,13 @@ app.on('window-all-closed', () => {
  */
 app.on('before-quit', () => {
   isQuitting = true;
+  
+  // 断开 Gateway 连接
+  if (gatewayConnection) {
+    gatewayConnection.close();
+    gatewayConnection = null;
+    isGatewayConnected = false;
+  }
   
   if (tray) {
     tray.destroy();

@@ -28,6 +28,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   getVersion: () => ipcRenderer.invoke('get-version'),
   
+  // Gateway 连接
+  connectGateway: (host, port, token) => ipcRenderer.invoke('connect-gateway', { host, port, token }),
+  requestPairing: () => ipcRenderer.invoke('request-pairing'),
+  approvePairing: (requestId) => ipcRenderer.invoke('approve-pairing', { requestId }),
+  oneClickPair: (host, port, token) => ipcRenderer.invoke('one-click-pair', { host, port, token }),
+  getGatewayStatus: () => ipcRenderer.invoke('get-gateway-status'),
+  disconnectGateway: () => ipcRenderer.invoke('disconnect-gateway'),
+  
   // 事件监听
   onUpdateAvailable: (callback) => {
     ipcRenderer.on('update-available', (event, info) => callback(info));
@@ -37,5 +45,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   onShowWizard: (callback) => {
     ipcRenderer.on('show-wizard', () => callback());
+  },
+  onGatewayStatusChanged: (callback) => {
+    ipcRenderer.on('gateway-status-changed', (event, status) => callback(status));
   }
 });

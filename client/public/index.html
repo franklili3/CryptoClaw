@@ -683,6 +683,38 @@
           <p class="page-subtitle">应用配置</p>
         </div>
         
+        <!-- Gateway 配对 -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Gateway 配对</h2>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Gateway 地址</label>
+            <input type="text" class="form-input" id="gateway-host" value="127.0.0.1">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">端口</label>
+            <input type="text" class="form-input" id="gateway-port" value="19001">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Gateway Token</label>
+            <input type="password" class="form-input" id="gateway-token" placeholder="从 Gateway 获取">
+            <p class="form-hint">首次配对需要输入 Gateway Token，之后自动连接</p>
+          </div>
+          
+          <div class="service-status" style="margin-bottom: 16px;">
+            <span class="status-dot" id="gateway-status-dot"></span>
+            <span class="status-text" id="gateway-status-text">未连接</span>
+          </div>
+          
+          <button class="btn btn-primary" id="pair-btn" onclick="handlePairButton()">
+            一键配对
+          </button>
+        </div>
+        
         <div class="card">
           <div class="card-header">
             <h2 class="card-title">关于</h2>
