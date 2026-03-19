@@ -29,12 +29,12 @@ CryptoClaw supports multiple CPU architectures:
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://cryptoclaw.pro/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.sh | bash
 ```
 
 **Windows (PowerShell Administrator):**
 ```powershell
-irm https://cryptoclaw.pro/install.ps1 | iex
+irm https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.ps1 | iex
 ```
 
 The installer will:

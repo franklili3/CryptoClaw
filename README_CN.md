@@ -50,12 +50,12 @@ CryptoClaw 支持多种 CPU 架构：
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://cryptoclaw.pro/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.sh | bash
 ```
 
 **Windows (PowerShell 管理员):**
 ```powershell
-irm https://cryptoclaw.pro/install.ps1 | iex
+irm https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.ps1 | iex
 ```
 
 安装程序会自动：
