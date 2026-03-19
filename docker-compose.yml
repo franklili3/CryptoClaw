@@ -41,6 +41,7 @@ services:
       # OpenClaw 配置
       - OPENCLAW_CONFIG=/app/config/openclaw.yaml
       - OPENCLAW_WORKSPACE=/app/workspace
+      - OPENCLAW_TOKEN=${OPENCLAW_TOKEN:-}
       
       # 交易所 API 配置 (可选，用于实盘交易)
       - BINANCE_API_KEY=${BINANCE_API_KEY:-}

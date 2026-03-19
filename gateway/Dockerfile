@@ -98,45 +98,9 @@ RUN mkdir -p /app/workspace/skills \
     /app/.openclaw \
     && chown -R cryptoclaw:cryptoclaw /app/workspace /app/data /app/logs /app/.openclaw
 
-# Create default OpenClaw configuration
+# Create config directory (OpenClaw will create default config with --dev flag)
 RUN mkdir -p /app/config && \
-    echo '# OpenClaw Configuration\n\
-# See: https://docs.openclaw.ai\n\
-\n\
-agents:\n\
-  list:\n\
-    - id: cryptoclaw\n\
-      name: CryptoClaw\n\
-      workspace: /app/workspace\n\
-      model: ${LLM_PROVIDER}/${LLM_MODEL}\n\
-      default: true\n\
-\n\
-bindings:\n\
-  - agentId: cryptoclaw\n\
-    match:\n\
-      channel: telegram\n\
-\n\
-channels:\n\
-  telegram:\n\
-    accounts:\n\
-      default:\n\
-        botToken: ${TELEGRAM_BOT_TOKEN}\n\
-        dmPolicy: pairing\n\
-\n\
-llm:\n\
-  provider: ${LLM_PROVIDER:-openai}\n\
-  apiKey: ${LLM_API_KEY}\n\
-  model: ${LLM_MODEL:-gpt-4}\n\
-  baseUrl: ${LLM_BASE_URL:-}\n\
-\n\
-gateway:\n\
-  mode: local\n\
-  bind: lan\n\
-  auth:\n\
-    mode: token\n\
-    token: ${OPENCLAW_TOKEN:-}\n\
-' > /app/config/openclaw.yaml && \
-    chown cryptoclaw:cryptoclaw /app/config/openclaw.yaml
+    chown cryptoclaw:cryptoclaw /app/config
 
 # Copy default skills
 COPY --chown=cryptoclaw:cryptoclaw skills/ /app/workspace/skills/
