@@ -163,14 +163,19 @@ docker build \
 
 ## 多架构构建
 
-### 支持的架构
+### 构建方式选择
 
-| 架构 | Docker 平台 | 用途 |
-|------|-------------|------|
-| x86_64 | linux/amd64 | Intel/AMD 处理器 |
-| ARM64 | linux/arm64 | Apple Silicon, 树莓派, AWS Graviton |
+多架构构建支持三种方式：
 
-### 使用构建脚本
+| 方式 | 复杂度 | 适用场景 | 推荐度 |
+|------|--------|----------|--------|
+| 构建脚本 | ⭐ 简单 | 日常构建、快速发布 | ⭐⭐⭐ 推荐 |
+| Docker Buildx | ⭐⭐ 中等 | 自定义参数、快速测试 | ⭐⭐ |
+| docker-bake.hcl | ⭐⭐⭐ 复杂 | CI/CD、多目标构建 | ⭐⭐ |
+
+### 方式一：使用构建脚本（推荐）
+
+最简单的方式，封装了所有配置：
 
 ```bash
 # 查看帮助
@@ -192,13 +197,21 @@ docker build \
 VERSION=1.0.0 ./scripts/build-docker.sh --multi --push
 ```
 
-### 使用 Docker Buildx
+**优点：**
+- 一键完成所有配置
+- 自动创建和管理 builder
+- 自动处理 QEMU 设置
+- 支持本地构建和多架构构建
+
+### 方式二：使用 Docker Buildx
+
+更灵活，适合需要自定义参数的场景：
 
 ```bash
 # 创建 builder 实例
 docker buildx create --name cryptoclaw-builder --use
 
-# 构建多架构镜像
+# 构建多架构镜像并推送
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
   -t cryptoclaw/cryptoclaw:latest \
@@ -214,7 +227,14 @@ docker buildx build \
   ./gateway
 ```
 
-### 使用 docker-bake.hcl
+**优点：**
+- 完全控制构建参数
+- 适合快速测试
+- 无需额外配置文件
+
+### 方式三：使用 docker-bake.hcl
+
+声明式配置，适合 CI/CD 和复杂构建场景：
 
 ```bash
 # 默认构建（多架构）
@@ -228,6 +248,32 @@ docker buildx bake cryptoclaw-prod
 
 # 发布版本
 docker buildx bake release
+```
+
+**优点：**
+- 声明式配置，可版本控制
+- 支持多目标构建
+- 适合 CI/CD 集成
+- 配置复用性强
+
+### 支持的架构
+
+| 架构 | Docker 平台 | 用途 |
+|------|-------------|------|
+| x86_64 | linux/amd64 | Intel/AMD 处理器 |
+| ARM64 | linux/arm64 | Apple Silicon, 树莓派, AWS Graviton |
+
+### 构建方式对比
+
+```bash
+# 方式一：构建脚本（推荐）
+./scripts/build-docker.sh --multi --push
+
+# 方式二：Docker Buildx
+docker buildx build --platform linux/amd64,linux/arm64 -t cryptoclaw/cryptoclaw:latest --push ./gateway
+
+# 方式三：docker-bake.hcl
+docker buildx bake cryptoclaw-prod
 ```
 
 ---
