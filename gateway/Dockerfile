@@ -52,19 +52,11 @@ LABEL org.opencontainers.image.source="https://github.com/franklili3/CryptoClaw"
 
 WORKDIR /app
 
-# Configure Alpine mirror for China (auto-detect via build arg)
-ARG ALPINE_MIRROR=""
-RUN if [ -n "$ALPINE_MIRROR" ]; then \
-        sed -i "s|https://dl-cdn.alpinelinux.org|${ALPINE_MIRROR}|g" /etc/apk/repositories; \
-        cat /etc/apk/repositories; \
-    fi
-
-# Note: DNS configuration must be done at Docker daemon level
-# For v2rayA DNS issues, configure /etc/docker/daemon.json:
-# {
-#   "dns": ["223.5.5.5", "119.29.29.29", "8.8.8.8"]
-# }
-# Then restart Docker: sudo systemctl restart docker
+# Note: Alpine mirror can be configured via build arg if needed
+# ARG ALPINE_MIRROR=""
+# RUN if [ -n "$ALPINE_MIRROR" ]; then \
+#         sed -i "s|https://dl-cdn.alpinelinux.org|${ALPINE_MIRROR}|g" /etc/apk/repositories; \
+#     fi
 
 # Install system dependencies for OpenClaw
 # - curl: HTTP requests and health checks

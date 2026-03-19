@@ -30,8 +30,6 @@ USE_CHINA_MIRROR=false
 
 # 镜像源配置 (OpenClaw requires Node.js >= 22.12.0)
 OFFICIAL_BASE="node:22-alpine"
-CHINA_DOCKER_MIRROR="docker.1ms.run"
-CHINA_ALPINE_MIRROR="https://mirrors.aliyun.com/alpine"
 
 # 日志函数
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
@@ -172,23 +170,7 @@ build_image() {
     fi
     
     # 设置构建参数
-    BUILD_ARGS=""
-    
-    if [ "$USE_CHINA_MIRROR" = true ]; then
-        log_info "使用国内镜像源"
-        BASE_IMAGE="${CHINA_DOCKER_MIRROR}/node:22-alpine"
-        ALPINE_MIRROR="${CHINA_ALPINE_MIRROR}"
-        BUILD_ARGS="--build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg ALPINE_MIRROR=${ALPINE_MIRROR}"
-        log_info "Docker 基础镜像: ${BASE_IMAGE}"
-        log_info "Alpine 镜像源: ${ALPINE_MIRROR}"
-    else
-        log_info "使用官方镜像源"
-        BASE_IMAGE="node:22-alpine"
-        BUILD_ARGS="--build-arg BASE_IMAGE=${BASE_IMAGE}"
-    fi
-    
-    # 添加版本信息
-    BUILD_ARGS="${BUILD_ARGS} --build-arg VERSION=${VERSION} --build-arg GIT_SHA=${GIT_SHA}"
+    BUILD_ARGS="--build-arg VERSION=${VERSION} --build-arg GIT_SHA=${GIT_SHA}"
     
     # 标签
     TAGS="-t ${REGISTRY}/${IMAGE_NAME}:${VERSION}"
