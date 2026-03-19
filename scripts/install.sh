@@ -283,70 +283,182 @@ detect_china_region() {
 # 拉取 Docker 镜像 (多架构 + 国内镜像加速)
 # ============================================
 pull_image() {
-    log_step "拉取 CryptoClaw Docker 镜像..."
+    log_step "准备 CryptoClaw Docker 镜像..."
     
     log_info "目标平台: ${DOCKER_PLATFORM}"
     log_info "镜像: ${DOCKER_IMAGE}:latest"
     
-    # 检测是否在中国大陆
-    detect_china_region
+    # ============================================
+    # 测试阶段：使用本地镜像构建
+    # TODO: 发布后取消注释以下代码块
+    # ============================================
+    log_warning "测试阶段：使用本地构建镜像"
     
-    # 设置镜像源
-    if [ "$IS_CHINA" = true ]; then
-        log_info "使用国内镜像加速..."
-        REGISTRY_MIRROR="hub.dockermirror.com"
-        IMAGE_URL="${REGISTRY_MIRROR}/${DOCKER_IMAGE}:latest"
-        log_info "镜像源: ${REGISTRY_MIRROR}"
-    else
-        REGISTRY_MIRROR="docker.io"
-        IMAGE_URL="${DOCKER_IMAGE}:latest"
-        log_info "镜像源: Docker Hub 官方"
-    fi
-    
-    # 尝试拉取镜像
-    local pull_success=false
-    
-    # 首次尝试
-    if docker pull --platform "$DOCKER_PLATFORM" "$IMAGE_URL"; then
-        pull_success=true
-        # 如果使用镜像源，需要重新标记标签
-        if [ "$IS_CHINA" = true ]; then
-            docker tag "$IMAGE_URL" "${DOCKER_IMAGE}:latest"
-            log_success "镜像已标记为: ${DOCKER_IMAGE}:latest"
-        fi
-    fi
-    
-    # 如果首次失败，尝试备用方案
-    if [ "$pull_success" = false ]; then
-        log_warning "主镜像源拉取失败，尝试备用方案..."
-        
-        # 备用方案1：尝试 Docker Hub 官方
-        if [ "$IS_CHINA" = true ]; then
-            log_info "尝试 Docker Hub 官方源..."
-            if docker pull --platform "$DOCKER_PLATFORM" "${DOCKER_IMAGE}:latest"; then
-                pull_success=true
-            fi
-        fi
-        
-        # 备用方案2：尝试阿里云镜像（如果有配置）
-        if [ "$pull_success" = false ] && [ -n "$ALIYUN_REGISTRY" ]; then
-            log_info "尝试阿里云镜像..."
-            if docker pull --platform "$DOCKER_PLATFORM" "${ALIYUN_REGISTRY}/${DOCKER_IMAGE}:latest"; then
-                docker tag "${ALIYUN_REGISTRY}/${DOCKER_IMAGE}:latest" "${DOCKER_IMAGE}:latest"
-                pull_success=true
-            fi
-        fi
-    fi
-    
-    # 检查结果
-    if [ "$pull_success" = true ]; then
-        log_success "Docker 镜像拉取成功"
-        
-        # 验证镜像架构
+    # 检查本地是否已有镜像
+    if docker image inspect "${DOCKER_IMAGE}:latest" &>/dev/null; then
+        log_success "检测到本地镜像已存在"
         IMAGE_ARCH=$(docker inspect --format='{{.Architecture}}' "${DOCKER_IMAGE}:latest" 2>/dev/null || echo "unknown")
         log_info "镜像架构: ${IMAGE_ARCH}"
-        
-        # 检查架构匹配
+        return 0
+    fi
+    
+    # 本地没有镜像，提示用户构建
+    log_warning "本地未找到镜像，请先构建："
+    log_info "  cd /path/to/CryptoClaw"
+    log_info "  ./scripts/build-docker.sh --local"
+    log_info ""
+    log_info "或手动构建："
+    log_info "  docker build -t cryptoclaw/cryptoclaw:latest ./gateway"
+    
+    # 询问是否现在构建
+    read -p "是否现在构建镜像？(y/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        build_local_image
+    else
+        log_error "请先构建镜像后再继续安装"
+        exit 1
+    fi
+    
+    return 0
+    
+    # ============================================
+    # 以下代码在发布后启用（取消注释）
+    # ============================================
+    
+    # # 检测是否在中国大陆
+    # detect_china_region
+    # 
+    # # 设置镜像源
+    # if [ "$IS_CHINA" = true ]; then
+    #     log_info "使用国内镜像加速..."
+    #     REGISTRY_MIRROR="hub.dockermirror.com"
+    #     IMAGE_URL="${REGISTRY_MIRROR}/${DOCKER_IMAGE}:latest"
+    #     log_info "镜像源: ${REGISTRY_MIRROR}"
+    # else
+    #     REGISTRY_MIRROR="docker.io"
+    #     IMAGE_URL="${DOCKER_IMAGE}:latest"
+    #     log_info "镜像源: Docker Hub 官方"
+    # fi
+    # 
+    # # 尝试拉取镜像
+    # local pull_success=false
+    # 
+    # # 首次尝试
+    # if docker pull --platform "$DOCKER_PLATFORM" "$IMAGE_URL"; then
+    #     pull_success=true
+    #     # 如果使用镜像源，需要重新标记标签
+    #     if [ "$IS_CHINA" = true ]; then
+    #         docker tag "$IMAGE_URL" "${DOCKER_IMAGE}:latest"
+    #         log_success "镜像已标记为: ${DOCKER_IMAGE}:latest"
+    #     fi
+    # fi
+    # 
+    # # 如果首次失败，尝试备用方案
+    # if [ "$pull_success" = false ]; then
+    #     log_warning "主镜像源拉取失败，尝试备用方案..."
+    #     
+    #     # 备用方案1：尝试 Docker Hub 官方
+    #     if [ "$IS_CHINA" = true ]; then
+    #         log_info "尝试 Docker Hub 官方源..."
+    #         if docker pull --platform "$DOCKER_PLATFORM" "${DOCKER_IMAGE}:latest"; then
+    #             pull_success=true
+    #         fi
+    #     fi
+    #     
+    #     # 备用方案2：尝试阿里云镜像（如果有配置）
+    #     if [ "$pull_success" = false ] && [ -n "$ALIYUN_REGISTRY" ]; then
+    #         log_info "尝试阿里云镜像..."
+    #         if docker pull --platform "$DOCKER_PLATFORM" "${ALIYUN_REGISTRY}/${DOCKER_IMAGE}:latest"; then
+    #             docker tag "${ALIYUN_REGISTRY}/${DOCKER_IMAGE}:latest" "${DOCKER_IMAGE}:latest"
+    #             pull_success=true
+    #         fi
+    #     fi
+    # fi
+    # 
+    # # 检查结果
+    # if [ "$pull_success" = true ]; then
+    #     log_success "Docker 镜像拉取成功"
+    #     
+    #     # 验证镜像架构
+    #     IMAGE_ARCH=$(docker inspect --format='{{.Architecture}}' "${DOCKER_IMAGE}:latest" 2>/dev/null || echo "unknown")
+    #     log_info "镜像架构: ${IMAGE_ARCH}"
+    #     
+    #     # 检查架构匹配
+    #     if [[ "$IMAGE_ARCH" == "amd64" && "$PLATFORM" == "amd64" ]] || \
+    #        [[ "$IMAGE_ARCH" == "arm64" && "$PLATFORM" == "arm64" ]] || \
+    #        [[ "$IMAGE_ARCH" == "x86_64" && "$PLATFORM" == "amd64" ]]; then
+    #         log_success "架构匹配验证通过"
+    #     elif [[ "$IMAGE_ARCH" != "unknown" ]]; then
+    #         log_warning "镜像架构 (${IMAGE_ARCH}) 与系统架构 (${PLATFORM}) 可能不匹配"
+    #         log_warning "如果遇到问题，请检查镜像是否支持您的平台"
+    #     fi
+    # else
+    #     log_error "Docker 镜像拉取失败"
+    #     log_error ""
+    #     log_error "请尝试以下解决方案："
+    #     log_error "1. 检查网络连接"
+    #     log_error "2. 配置 Docker 代理: https://docs.docker.com/config/daemon/systemd/#httphttps-proxy"
+    #     log_error "3. 手动拉取: docker pull ${DOCKER_IMAGE}:latest"
+    #     log_error "4. 使用镜像加速: docker pull hub.dockermirror.com/${DOCKER_IMAGE}:latest"
+    #     exit 1
+    # fi
+}
+
+# ============================================
+# 本地构建镜像
+# ============================================
+build_local_image() {
+    log_step "构建本地 Docker 镜像..."
+    
+    # 查找 CryptoClaw 源码目录
+    local source_dir=""
+    
+    # 尝试常见路径
+    for dir in \
+        "$HOME/CryptoClaw" \
+        "$HOME/clawd/CryptoClaw" \
+        "$(dirname "$0")/.." \
+        "$(pwd)" \
+        "/opt/CryptoClaw"
+    do
+        if [ -f "$dir/gateway/Dockerfile" ] || [ -f "$dir/Dockerfile" ]; then
+            source_dir="$dir"
+            break
+        fi
+    done
+    
+    if [ -z "$source_dir" ]; then
+        log_error "未找到 CryptoClaw 源码目录"
+        log_error "请手动构建镜像："
+        log_error "  cd /path/to/CryptoClaw"
+        log_error "  ./scripts/build-docker.sh --local"
+        exit 1
+    fi
+    
+    log_info "找到源码目录: $source_dir"
+    
+    # 构建
+    cd "$source_dir"
+    
+    if [ -f "gateway/Dockerfile" ]; then
+        docker build \
+            --platform "$DOCKER_PLATFORM" \
+            -t "${DOCKER_IMAGE}:latest" \
+            -f gateway/Dockerfile \
+            ./gateway
+    elif [ -f "Dockerfile" ]; then
+        docker build \
+            --platform "$DOCKER_PLATFORM" \
+            -t "${DOCKER_IMAGE}:latest" \
+            .
+    else
+        log_error "找不到 Dockerfile"
+        exit 1
+    fi
+    
+    log_success "本地镜像构建完成"
+}
         if [[ "$IMAGE_ARCH" == "amd64" && "$PLATFORM" == "amd64" ]] || \
            [[ "$IMAGE_ARCH" == "arm64" && "$PLATFORM" == "arm64" ]] || \
            [[ "$IMAGE_ARCH" == "x86_64" && "$PLATFORM" == "amd64" ]]; then
@@ -594,16 +706,6 @@ esac
 echo "🔄 检查更新..."
 echo "   当前架构: ${ARCH} (${PLATFORM})"
 
-# 检测是否在中国大陆
-IS_CHINA=false
-if [ -f /etc/timezone ] && grep -q "Asia/Shanghai\|China\|Beijing" /etc/timezone 2>/dev/null; then
-    IS_CHINA=true
-elif echo "$LANG" | grep -qi "zh_CN" 2>/dev/null; then
-    IS_CHINA=true
-elif ! curl -s --max-time 3 https://www.google.com > /dev/null 2>&1; then
-    IS_CHINA=true
-fi
-
 # 获取当前版本
 CURRENT=$(docker exec cryptoclaw cat /app/VERSION 2>/dev/null || echo "unknown")
 
@@ -612,23 +714,47 @@ LATEST=$(curl -s --max-time 10 https://api.github.com/repos/franklili3/CryptoCla
 
 if [ "$CURRENT" != "$LATEST" ] && [ "$LATEST" != "unknown" ]; then
     echo "📦 发现新版本: $LATEST (当前: $CURRENT)"
-    echo "   正在更新..."
+    echo ""
+    echo "⚠️  测试阶段：请手动更新本地镜像"
+    echo ""
+    echo "更新步骤："
+    echo "  1. cd /path/to/CryptoClaw"
+    echo "  2. git pull"
+    echo "  3. ./scripts/build-docker.sh --local"
+    echo "  4. cd ~/.cryptoclaw"
+    echo "  5. ./stop.sh && ./start.sh"
+    echo ""
     
-    # 选择镜像源
-    if [ "$IS_CHINA" = true ]; then
-        echo "   使用国内镜像加速..."
-        docker pull --platform $PLATFORM hub.dockermirror.com/cryptoclaw/cryptoclaw:latest
-        docker tag hub.dockermirror.com/cryptoclaw/cryptoclaw:latest cryptoclaw/cryptoclaw:latest
-    else
-        docker pull --platform $PLATFORM cryptoclaw/cryptoclaw:latest
-    fi
-    
-    # 重启容器
-    cd ~/.cryptoclaw
-    docker-compose -f config/docker-compose.yml down
-    docker-compose -f config/docker-compose.yml up -d
-    
-    echo "✅ 更新完成！"
+    # ============================================
+    # 以下代码在发布后启用（取消注释）
+    # ============================================
+    # # 检测是否在中国大陆
+    # IS_CHINA=false
+    # if [ -f /etc/timezone ] && grep -q "Asia/Shanghai\|China\|Beijing" /etc/timezone 2>/dev/null; then
+    #     IS_CHINA=true
+    # elif echo "$LANG" | grep -qi "zh_CN" 2>/dev/null; then
+    #     IS_CHINA=true
+    # elif ! curl -s --max-time 3 https://www.google.com > /dev/null 2>&1; then
+    #     IS_CHINA=true
+    # fi
+    # 
+    # echo "   正在更新..."
+    # 
+    # # 选择镜像源
+    # if [ "$IS_CHINA" = true ]; then
+    #     echo "   使用国内镜像加速..."
+    #     docker pull --platform $PLATFORM hub.dockermirror.com/cryptoclaw/cryptoclaw:latest
+    #     docker tag hub.dockermirror.com/cryptoclaw/cryptoclaw:latest cryptoclaw/cryptoclaw:latest
+    # else
+    #     docker pull --platform $PLATFORM cryptoclaw/cryptoclaw:latest
+    # fi
+    # 
+    # # 重启容器
+    # cd ~/.cryptoclaw
+    # docker-compose -f config/docker-compose.yml down
+    # docker-compose -f config/docker-compose.yml up -d
+    # 
+    # echo "✅ 更新完成！"
 else
     echo "✅ 已是最新版本: $CURRENT"
 fi
