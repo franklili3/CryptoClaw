@@ -301,10 +301,6 @@ function createMenu() {
 /**
  * 检查是否已配置
  */
-function isConfigured() {
-  return fs.existsSync(ENV_PATH) && fs.existsSync(OPENCLAW_CONFIG_PATH);
-}
-
 /**
  * 显示欢迎向导
  */
@@ -348,6 +344,17 @@ function initIpcHandlers() {
   // 保存配置
   ipcMain.handle('set-config', async (event, { key, value }) => {
     secureStore.set(key, value);
+    
+    // 如果是 wizardCompleted，创建标记文件
+    if (key === 'wizardCompleted' && value === true) {
+      const configDir = path.dirname(WIZARD_COMPLETED_FILE);
+      if (!fs.existsSync(configDir)) {
+        fs.mkdirSync(configDir, { recursive: true });
+      }
+      fs.writeFileSync(WIZARD_COMPLETED_FILE, '');
+      log.info('Wizard completed, marker file created');
+    }
+    
     return { success: true };
   });
 
@@ -401,14 +408,67 @@ function initIpcHandlers() {
 
   // 启动服务
   ipcMain.handle('start-service', async () => {
-    // TODO: 实现 Docker 容器启动
-    return { success: true, message: 'Service started' };
+    const { exec } = require('child_process');
+    const util = require('util');
+    const execAsync = util.promisify(exec);
+    
+    try {
+      // 检查容器是否已存在
+      const { stdout: psOutput } = await execAsync('/snap/bin/docker ps -a --filter name=cryptoclaw-gateway --format "{{.Status}}"');
+      
+      if (psOutput.includes('Up')) {
+        return { success: true, message: '服务已在运行中' };
+      }
+      
+      if (psOutput.includes('Exited')) {
+        // 容器存在但已停止，启动它
+        await execAsync('/snap/bin/docker start cryptoclaw-gateway');
+        log.info('Gateway container started');
+        return { success: true, message: '服务已启动' };
+      }
+      
+      // 容器不存在，创建新容器
+      const configDir = CONFIG_DIR;
+      await execAsync(`mkdir -p ${configDir}/config`);
+      
+      // 创建配置文件（如果不存在）
+      const configPath = path.join(configDir, 'config', 'openclaw.yaml');
+      if (!fs.existsSync(configPath)) {
+        fs.writeFileSync(configPath, `gateway:
+  auth:
+    mode: token
+    token: "test-token-12345"
+  bind:
+    host: 0.0.0.0
+    port: 19001
+`);
+      }
+      
+      // 启动容器
+      await execAsync(`/snap/bin/docker run -d --name cryptoclaw-gateway -p 19001:19001 -v ${configDir}:/app/.openclaw cryptoclaw/cryptoclaw:latest`);
+      log.info('Gateway container created and started');
+      
+      return { success: true, message: '服务已启动' };
+    } catch (error) {
+      log.error('Start service error:', error);
+      return { success: false, message: `启动失败: ${error.message}` };
+    }
   });
 
   // 停止服务
   ipcMain.handle('stop-service', async () => {
-    // TODO: 实现 Docker 容器停止
-    return { success: true, message: 'Service stopped' };
+    const { exec } = require('child_process');
+    const util = require('util');
+    const execAsync = util.promisify(exec);
+    
+    try {
+      await execAsync('/snap/bin/docker stop cryptoclaw-gateway 2>/dev/null || true');
+      log.info('Gateway container stopped');
+      return { success: true, message: '服务已停止' };
+    } catch (error) {
+      log.error('Stop service error:', error);
+      return { success: false, message: `停止失败: ${error.message}` };
+    }
   });
 
   // 选择目录
@@ -457,7 +517,19 @@ function initIpcHandlers() {
             const msg = JSON.parse(data.toString());
             log.info('Gateway message:', msg.type || msg.method);
             
-            if (msg.type === 'auth:success' || msg.ok === true) {
+            // 处理挑战响应
+            if (msg.type === 'event' && msg.event === 'connect.challenge') {
+              log.info('Received challenge, responding...');
+              // 响应挑战 - 用 token 作为签名
+              ws.send(JSON.stringify({
+                type: 'auth:response',
+                nonce: msg.payload?.nonce,
+                token: token
+              }));
+              return;
+            }
+            
+            if (msg.type === 'auth:success' || msg.ok === true || msg.type === 'ready') {
               gatewayConnection = ws;
               isGatewayConnected = true;
               

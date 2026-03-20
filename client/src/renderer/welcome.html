@@ -104,10 +104,13 @@
       background: rgba(255, 255, 255, 0.05);
       color: #fff;
       font-size: 14px;
+      outline: none;
     }
     .form-input:focus {
-      outline: none;
       border-color: #64ffda;
+    }
+    .form-input::placeholder {
+      color: #8892b0;
     }
     .form-select {
       width: 100%;
@@ -308,13 +311,17 @@
         
         <div class="form-group">
           <label class="form-label">Gateway 端口</label>
-          <input type="text" class="form-input" id="gateway-port" value="19001" placeholder="19001">
+          <input type="text" class="form-input" id="gateway-port" value="18789" placeholder="18789">
         </div>
         
         <div class="form-group">
           <label class="form-label">Gateway Token</label>
           <input type="password" class="form-input" id="gateway-token" placeholder="输入 Gateway Token">
         </div>
+        
+        <p style="color: #8892b0; font-size: 12px; margin-bottom: 15px;">
+          💡 提示：本机 OpenClaw Gateway 运行在端口 18789
+        </p>
         
         <div class="checkbox-group">
           <input type="checkbox" class="checkbox" id="auto-connect" checked>
@@ -394,8 +401,8 @@
       
       alert('配置完成！即将进入主界面...');
       
-      // 通知主进程切换页面
-      window.location.href = 'index.html';
+      // 刷新页面，主进程会检测到配置完成并加载 index.html
+      window.location.reload();
     }
   </script>
 </body>

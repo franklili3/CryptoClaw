@@ -179,12 +179,15 @@
         </div>
         <div class="form-group">
           <label class="form-label">Port</label>
-          <input type="text" class="form-input" id="gateway-port" value="19001" placeholder="19001">
+          <input type="text" class="form-input" id="gateway-port" value="18789" placeholder="18789">
         </div>
         <div class="form-group">
           <label class="form-label">Token</label>
           <input type="password" class="form-input" id="gateway-token" placeholder="Gateway Token">
         </div>
+        <p style="color: #8892b0; font-size: 12px; margin-top: 8px;">
+          💡 提示：本机 OpenClaw Gateway 运行在端口 18789，Token 可从 ~/.openclaw/openclaw.json 获取
+        </p>
       </div>
       <div class="actions">
         <button class="btn btn-primary" id="connect-btn" onclick="connectGateway()">连接</button>
@@ -214,20 +217,21 @@
   </div>
 
   <script>
-    const { ipcRenderer } = require('electron');
+    // 使用 preload 暴露的 API
+    const api = window.electronAPI;
 
     // 初始化
     async function init() {
       // 获取版本
-      const version = await ipcRenderer.invoke('get-version');
+      const version = await api.getVersion();
       document.getElementById('app-version').textContent = version;
 
       // 获取服务状态
-      const status = await ipcRenderer.invoke('get-service-status');
+      const status = await api.getServiceStatus();
       updateServiceStatus(status);
 
       // 获取 Gateway 状态
-      const gwStatus = await ipcRenderer.invoke('get-gateway-status');
+      const gwStatus = await api.getGatewayStatus();
       updateGatewayStatus(gwStatus);
 
       // 获取 API Keys
@@ -276,11 +280,12 @@
       // 填充已保存的连接信息
       if (status.host) document.getElementById('gateway-host').value = status.host;
       if (status.port) document.getElementById('gateway-port').value = status.port;
+      // Token 不返回（安全考虑），但如果有保存过，需要用户重新输入
     }
 
     // 加载 API Keys
     async function loadApiKeys() {
-      const keys = await ipcRenderer.invoke('get-api-keys');
+      const keys = await api.getApiKeys();
       const list = document.getElementById('api-keys-list');
 
       if (keys.length === 0) {
@@ -299,17 +304,17 @@
 
     // 启动服务
     async function startService() {
-      const result = await ipcRenderer.invoke('start-service');
+      const result = await api.startService();
       alert(result.message);
-      const status = await ipcRenderer.invoke('get-service-status');
+      const status = await api.getServiceStatus();
       updateServiceStatus(status);
     }
 
     // 停止服务
     async function stopService() {
-      const result = await ipcRenderer.invoke('stop-service');
+      const result = await api.stopService();
       alert(result.message);
-      const status = await ipcRenderer.invoke('get-service-status');
+      const status = await api.getServiceStatus();
       updateServiceStatus(status);
     }
 
@@ -320,9 +325,9 @@
       const token = document.getElementById('gateway-token').value;
 
       try {
-        const result = await ipcRenderer.invoke('connect-gateway', { host, port, token });
+        const result = await api.connectGateway(host, parseInt(port), token);
         alert('连接成功！');
-        const status = await ipcRenderer.invoke('get-gateway-status');
+        const status = await api.getGatewayStatus();
         updateGatewayStatus(status);
       } catch (error) {
         alert('连接失败: ' + error.message);
@@ -336,7 +341,7 @@
       const token = document.getElementById('gateway-token').value;
 
       try {
-        const result = await ipcRenderer.invoke('one-click-pair', { host, port, token });
+        const result = await api.oneClickPair(host, parseInt(port), token);
         if (result.success) {
           alert('配对成功！Device Token 已保存');
         } else {
@@ -357,7 +362,7 @@
 
       const name = prompt('Name (optional):') || '';
 
-      const result = await ipcRenderer.invoke('add-api-key', { provider, key, name });
+      const result = await api.addApiKey(provider, key, name);
       if (result.success) {
         await loadApiKeys();
       }
@@ -367,14 +372,14 @@
     async function deleteApiKey(id) {
       if (!confirm('确定要删除这个 API Key 吗？')) return;
 
-      const result = await ipcRenderer.invoke('delete-api-key', id);
+      const result = await api.deleteApiKey(id);
       if (result.success) {
         await loadApiKeys();
       }
     }
 
     // 监听 Gateway 状态变化
-    ipcRenderer.on('gateway-status-changed', (event, status) => {
+    api.onGatewayStatusChanged((status) => {
       updateGatewayStatus(status);
     });
 
