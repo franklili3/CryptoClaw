@@ -41,6 +41,15 @@ const CONFIG_DIR = path.join(app.getPath('home'), '.cryptoclaw');
 const DB_PATH = path.join(CONFIG_DIR, 'cryptoclaw.db');
 const ENV_PATH = path.join(CONFIG_DIR, 'config', '.env');
 const OPENCLAW_CONFIG_PATH = path.join(CONFIG_DIR, 'config', 'openclaw.yaml');
+const WIZARD_COMPLETED_FILE = path.join(CONFIG_DIR, '.wizard_completed');
+
+/**
+ * 检查是否已完成首次配置
+ */
+function isConfigured() {
+  // 检查配置目录和标记文件是否存在
+  return fs.existsSync(WIZARD_COMPLETED_FILE);
+}
 
 /**
  * 创建主窗口
@@ -73,11 +82,50 @@ function createMainWindow() {
   mainWindowState.manage(mainWindow);
 
   // 加载应用
+  const showWizard = !isConfigured();
+  const htmlFile = showWizard ? 'welcome.html' : 'index.html';
+  
   if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:3000');
+    mainWindow.loadFile(path.join(__dirname, `../renderer/${htmlFile}`));
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    // 生产模式：检查多个可能的路径
+    const possiblePaths = [
+      path.join(__dirname, `../renderer/${htmlFile}`),  // app.asar 内
+      path.join(app.getAppPath(), `src/renderer/${htmlFile}`),  // 开发目录
+      path.join(path.dirname(app.getAppPath()), `src/renderer/${htmlFile}`),  // 解压后的目录
+    ];
+    
+    let htmlPath = null;
+    for (const p of possiblePaths) {
+      log.info('Checking path:', p);
+      if (fs.existsSync(p)) {
+        htmlPath = p;
+        log.info('Found HTML at:', htmlPath);
+        break;
+      }
+    }
+    
+    if (htmlPath) {
+      mainWindow.loadFile(htmlPath);
+    } else {
+      log.error('HTML file not found in any of:', possiblePaths);
+      // 显示错误页面
+      mainWindow.loadURL(`data:text/html,
+        <html>
+        <head><title>CryptoClaw - Error</title></head>
+        <body style="background:#1a1a2e;color:#fff;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;">
+          <div style="text-align:center;">
+            <h1>🦀 CryptoClaw</h1>
+            <p style="color:#ff6464;">Failed to load application UI</p>
+            <p style="color:#8892b0;font-size:14px;">Please check the installation or run from source</p>
+            <p style="color:#64ffda;font-size:12px;margin-top:20px;">Searched paths:</p>
+            <pre style="color:#8892b0;font-size:11px;text-align:left;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;">${possiblePaths.join('\n')}</pre>
+          </div>
+        </body>
+        </html>
+      `);
+    }
   }
 
   // 窗口准备就绪

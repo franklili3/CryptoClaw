@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoClaw</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .logo {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+    .title {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #8892b0;
+      font-size: 16px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .status-running {
+      background: rgba(100, 255, 218, 0.2);
+      color: #64ffda;
+    }
+    .status-stopped {
+      background: rgba(255, 100, 100, 0.2);
+      color: #ff6464;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: #64ffda;
+      color: #1a1a2e;
+    }
+    .btn-primary:hover {
+      background: #4fd1b8;
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .api-key-list {
+      list-style: none;
+    }
+    .api-key-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .api-key-item:last-child {
+      border-bottom: none;
+    }
+    .provider {
+      font-weight: 500;
+    }
+    .key-value {
+      color: #8892b0;
+      font-family: monospace;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #8892b0;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .gateway-form {
+      display: grid;
+      gap: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .form-label {
+      font-size: 14px;
+      color: #8892b0;
+    }
+    .form-input {
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      font-size: 14px;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #64ffda;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">🦀</div>
+      <h1 class="title">CryptoClaw</h1>
+      <p class="subtitle">AI-Powered Crypto Trading Assistant</p>
+    </div>
+
+    <!-- 服务状态卡片 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Gateway 服务</span>
+        <span class="status-badge status-stopped" id="service-status">未运行</span>
+      </div>
+      <p id="service-info">点击下方按钮启动 OpenClaw Gateway 服务</p>
+      <div class="actions">
+        <button class="btn btn-primary" id="start-btn" onclick="startService()">启动服务</button>
+        <button class="btn btn-secondary" id="stop-btn" onclick="stopService()" disabled>停止服务</button>
+      </div>
+    </div>
+
+    <!-- Gateway 连接卡片 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Gateway 连接</span>
+        <span class="status-badge status-stopped" id="gateway-status">未连接</span>
+      </div>
+      <div class="gateway-form">
+        <div class="form-group">
+          <label class="form-label">Host</label>
+          <input type="text" class="form-input" id="gateway-host" value="127.0.0.1" placeholder="127.0.0.1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Port</label>
+          <input type="text" class="form-input" id="gateway-port" value="19001" placeholder="19001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Token</label>
+          <input type="password" class="form-input" id="gateway-token" placeholder="Gateway Token">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="connect-btn" onclick="connectGateway()">连接</button>
+        <button class="btn btn-secondary" id="pair-btn" onclick="oneClickPair()" disabled>一键配对</button>
+      </div>
+    </div>
+
+    <!-- API Keys 卡片 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">API Keys</span>
+        <button class="btn btn-secondary" onclick="addApiKey()">+ 添加</button>
+      </div>
+      <ul class="api-key-list" id="api-keys-list">
+        <li class="empty-state">暂无 API Keys，点击上方按钮添加</li>
+      </ul>
+    </div>
+
+    <!-- 版本信息 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">关于</span>
+      </div>
+      <p>版本: <span id="app-version">1.0.0</span></p>
+      <p>配置目录: <code id="config-dir">~/.cryptoclaw</code></p>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    // 初始化
+    async function init() {
+      // 获取版本
+      const version = await ipcRenderer.invoke('get-version');
+      document.getElementById('app-version').textContent = version;
+
+      // 获取服务状态
+      const status = await ipcRenderer.invoke('get-service-status');
+      updateServiceStatus(status);
+
+      // 获取 Gateway 状态
+      const gwStatus = await ipcRenderer.invoke('get-gateway-status');
+      updateGatewayStatus(gwStatus);
+
+      // 获取 API Keys
+      await loadApiKeys();
+    }
+
+    // 更新服务状态
+    function updateServiceStatus(status) {
+      const badge = document.getElementById('service-status');
+      const info = document.getElementById('service-info');
+      const startBtn = document.getElementById('start-btn');
+      const stopBtn = document.getElementById('stop-btn');
+
+      if (status.running) {
+        badge.textContent = '运行中';
+        badge.className = 'status-badge status-running';
+        info.textContent = `Gateway 运行中，版本 ${status.version}`;
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+      } else {
+        badge.textContent = '未运行';
+        badge.className = 'status-badge status-stopped';
+        info.textContent = '点击下方按钮启动 OpenClaw Gateway 服务';
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      }
+
+      document.getElementById('config-dir').textContent = status.configDir || '~/.cryptoclaw';
+    }
+
+    // 更新 Gateway 状态
+    function updateGatewayStatus(status) {
+      const badge = document.getElementById('gateway-status');
+      const pairBtn = document.getElementById('pair-btn');
+
+      if (status.connected) {
+        badge.textContent = '已连接';
+        badge.className = 'status-badge status-running';
+        pairBtn.disabled = false;
+      } else {
+        badge.textContent = '未连接';
+        badge.className = 'status-badge status-stopped';
+        pairBtn.disabled = true;
+      }
+
+      // 填充已保存的连接信息
+      if (status.host) document.getElementById('gateway-host').value = status.host;
+      if (status.port) document.getElementById('gateway-port').value = status.port;
+    }
+
+    // 加载 API Keys
+    async function loadApiKeys() {
+      const keys = await ipcRenderer.invoke('get-api-keys');
+      const list = document.getElementById('api-keys-list');
+
+      if (keys.length === 0) {
+        list.innerHTML = '<li class="empty-state">暂无 API Keys，点击上方按钮添加</li>';
+        return;
+      }
+
+      list.innerHTML = keys.map(key => `
+        <li class="api-key-item">
+          <span class="provider">${key.provider}</span>
+          <span class="key-value">${key.key}</span>
+          <button class="btn btn-secondary" onclick="deleteApiKey('${key.id}')">删除</button>
+        </li>
+      `).join('');
+    }
+
+    // 启动服务
+    async function startService() {
+      const result = await ipcRenderer.invoke('start-service');
+      alert(result.message);
+      const status = await ipcRenderer.invoke('get-service-status');
+      updateServiceStatus(status);
+    }
+
+    // 停止服务
+    async function stopService() {
+      const result = await ipcRenderer.invoke('stop-service');
+      alert(result.message);
+      const status = await ipcRenderer.invoke('get-service-status');
+      updateServiceStatus(status);
+    }
+
+    // 连接 Gateway
+    async function connectGateway() {
+      const host = document.getElementById('gateway-host').value;
+      const port = document.getElementById('gateway-port').value;
+      const token = document.getElementById('gateway-token').value;
+
+      try {
+        const result = await ipcRenderer.invoke('connect-gateway', { host, port, token });
+        alert('连接成功！');
+        const status = await ipcRenderer.invoke('get-gateway-status');
+        updateGatewayStatus(status);
+      } catch (error) {
+        alert('连接失败: ' + error.message);
+      }
+    }
+
+    // 一键配对
+    async function oneClickPair() {
+      const host = document.getElementById('gateway-host').value;
+      const port = document.getElementById('gateway-port').value;
+      const token = document.getElementById('gateway-token').value;
+
+      try {
+        const result = await ipcRenderer.invoke('one-click-pair', { host, port, token });
+        if (result.success) {
+          alert('配对成功！Device Token 已保存');
+        } else {
+          alert('配对失败: ' + result.error);
+        }
+      } catch (error) {
+        alert('配对失败: ' + error.message);
+      }
+    }
+
+    // 添加 API Key
+    async function addApiKey() {
+      const provider = prompt('Provider (openai/anthropic/binance/okx):');
+      if (!provider) return;
+
+      const key = prompt('API Key:');
+      if (!key) return;
+
+      const name = prompt('Name (optional):') || '';
+
+      const result = await ipcRenderer.invoke('add-api-key', { provider, key, name });
+      if (result.success) {
+        await loadApiKeys();
+      }
+    }
+
+    // 删除 API Key
+    async function deleteApiKey(id) {
+      if (!confirm('确定要删除这个 API Key 吗？')) return;
+
+      const result = await ipcRenderer.invoke('delete-api-key', id);
+      if (result.success) {
+        await loadApiKeys();
+      }
+    }
+
+    // 监听 Gateway 状态变化
+    ipcRenderer.on('gateway-status-changed', (event, status) => {
+      updateGatewayStatus(status);
+    });
+
+    // 初始化
+    init();
+  </script>
+</body>
+</html>

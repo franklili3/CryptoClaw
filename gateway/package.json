@@ -1,7 +1,7 @@
 {
   "name": "cryptoclaw-gateway",
-  "version": "1.0.0",
-  "description": "CryptoClaw Gateway - AI-Powered Crypto Trading Assistant",
+  "version": "1.1.0",
+  "description": "CryptoClaw Gateway - AI-Powered Crypto Trading Assistant with SecureVault",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
@@ -15,7 +15,10 @@
     "trading",
     "ai",
     "freqtrade",
-    "openclaw"
+    "openclaw",
+    "hyperliquid",
+    "defillama",
+    "secure-vault"
   ],
   "author": "CryptoClaw Team",
   "license": "MIT",

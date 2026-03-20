@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoClaw - 欢迎向导</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .wizard-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .logo {
+      font-size: 64px;
+      margin-bottom: 20px;
+      animation: bounce 2s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .title {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #8892b0;
+      font-size: 16px;
+    }
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+    .step-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transition: all 0.3s;
+    }
+    .step-dot.active {
+      background: #64ffda;
+      width: 30px;
+      border-radius: 6px;
+    }
+    .step-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .step-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .step-description {
+      color: #8892b0;
+      text-align: center;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-size: 14px;
+      color: #8892b0;
+      margin-bottom: 8px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      font-size: 14px;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #64ffda;
+    }
+    .form-select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(30, 30, 50, 1);
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    .checkbox-label {
+      font-size: 14px;
+      color: #c0c0c0;
+    }
+    .btn-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-top: 30px;
+    }
+    .btn {
+      padding: 14px 28px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: #64ffda;
+      color: #1a1a2e;
+      flex: 1;
+    }
+    .btn-primary:hover {
+      background: #4fd1b8;
+    }
+    .btn-primary:disabled {
+      background: rgba(100, 255, 218, 0.3);
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .feature-list {
+      list-style: none;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .feature-item:last-child {
+      border-bottom: none;
+    }
+    .feature-icon {
+      font-size: 24px;
+    }
+    .feature-text {
+      flex: 1;
+    }
+    .feature-title {
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    .feature-desc {
+      font-size: 12px;
+      color: #8892b0;
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="wizard-container">
+    <div class="header">
+      <div class="logo">🦀</div>
+      <h1 class="title">欢迎使用 CryptoClaw</h1>
+      <p class="subtitle">AI 驱动的加密货币交易助手</p>
+    </div>
+
+    <div class="step-indicator">
+      <div class="step-dot active" id="step-1-dot"></div>
+      <div class="step-dot" id="step-2-dot"></div>
+      <div class="step-dot" id="step-3-dot"></div>
+    </div>
+
+    <!-- Step 1: 欢迎 -->
+    <div class="step-content" id="step-1">
+      <h2 class="step-title">开始使用</h2>
+      <p class="step-description">
+        CryptoClaw 将帮助你管理 API Keys、连接 Gateway 服务、<br>
+        并通过 AI 助手进行加密货币交易。
+      </p>
+      
+      <ul class="feature-list">
+        <li class="feature-item">
+          <span class="feature-icon">🔐</span>
+          <div class="feature-text">
+            <div class="feature-title">安全存储</div>
+            <div class="feature-desc">API Keys 使用 AES-256 加密存储</div>
+          </div>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">🤖</span>
+          <div class="feature-text">
+            <div class="feature-title">AI 助手</div>
+            <div class="feature-desc">通过自然语言控制交易策略</div>
+          </div>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">📊</span>
+          <div class="feature-text">
+            <div class="feature-title">实时监控</div>
+            <div class="feature-desc">追踪投资组合和市场动态</div>
+          </div>
+        </li>
+      </ul>
+      
+      <div class="btn-container">
+        <div></div>
+        <button class="btn btn-primary" onclick="goToStep(2)">下一步</button>
+      </div>
+    </div>
+
+    <!-- Step 2: 配置 LLM -->
+    <div class="step-content hidden" id="step-2">
+      <h2 class="step-title">配置 LLM 提供商</h2>
+      <p class="step-description">
+        选择你的 AI 模型提供商并输入 API Key
+      </p>
+      
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">LLM 提供商</label>
+          <select class="form-select" id="llm-provider">
+            <option value="openai">OpenAI (GPT-4)</option>
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="deepseek">DeepSeek</option>
+            <option value="zhipu">智谱 AI (GLM)</option>
+            <option value="custom">自定义</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">API Key</label>
+          <input type="password" class="form-input" id="llm-api-key" placeholder="sk-...">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">API Base URL (可选)</label>
+          <input type="text" class="form-input" id="llm-base-url" placeholder="https://api.openai.com/v1">
+        </div>
+        
+        <div class="checkbox-group">
+          <input type="checkbox" class="checkbox" id="save-key" checked>
+          <label class="checkbox-label" for="save-key">安全保存 API Key（加密存储）</label>
+        </div>
+      </div>
+      
+      <div class="btn-container">
+        <button class="btn btn-secondary" onclick="goToStep(1)">上一步</button>
+        <button class="btn btn-primary" onclick="saveLlmConfig()">下一步</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Gateway 连接 -->
+    <div class="step-content hidden" id="step-3">
+      <h2 class="step-title">连接 Gateway</h2>
+      <p class="step-description">
+        连接到 OpenClaw Gateway 服务以启用完整功能
+      </p>
+      
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">Gateway 地址</label>
+          <input type="text" class="form-input" id="gateway-host" value="127.0.0.1" placeholder="127.0.0.1">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Gateway 端口</label>
+          <input type="text" class="form-input" id="gateway-port" value="19001" placeholder="19001">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Gateway Token</label>
+          <input type="password" class="form-input" id="gateway-token" placeholder="输入 Gateway Token">
+        </div>
+        
+        <div class="checkbox-group">
+          <input type="checkbox" class="checkbox" id="auto-connect" checked>
+          <label class="checkbox-label" for="auto-connect">启动时自动连接</label>
+        </div>
+      </div>
+      
+      <div class="btn-container">
+        <button class="btn btn-secondary" onclick="goToStep(2)">上一步</button>
+        <button class="btn btn-primary" onclick="finishWizard()">完成配置</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    
+    let currentStep = 1;
+    
+    function goToStep(step) {
+      // 隐藏当前步骤
+      document.getElementById(`step-${currentStep}`).classList.add('hidden');
+      document.getElementById(`step-${currentStep}-dot`).classList.remove('active');
+      
+      // 显示新步骤
+      document.getElementById(`step-${step}`).classList.remove('hidden');
+      document.getElementById(`step-${step}-dot`).classList.add('active');
+      
+      currentStep = step;
+    }
+    
+    async function saveLlmConfig() {
+      const provider = document.getElementById('llm-provider').value;
+      const apiKey = document.getElementById('llm-api-key').value;
+      const baseUrl = document.getElementById('llm-base-url').value;
+      const saveKey = document.getElementById('save-key').checked;
+      
+      if (!apiKey) {
+        alert('请输入 API Key');
+        return;
+      }
+      
+      if (saveKey) {
+        try {
+          await ipcRenderer.invoke('add-api-key', {
+            provider: provider,
+            key: apiKey,
+            name: `${provider} LLM Key`
+          });
+          alert('API Key 已安全保存！');
+        } catch (error) {
+          console.error('Save API Key failed:', error);
+          alert('保存失败: ' + error.message);
+        }
+      }
+      
+      goToStep(3);
+    }
+    
+    async function finishWizard() {
+      const host = document.getElementById('gateway-host').value;
+      const port = document.getElementById('gateway-port').value;
+      const token = document.getElementById('gateway-token').value;
+      
+      if (token) {
+        try {
+          // 测试连接
+          await ipcRenderer.invoke('connect-gateway', { host, port, token });
+          alert('Gateway 连接成功！');
+        } catch (error) {
+          console.error('Gateway connection failed:', error);
+          // 继续完成，用户可以稍后配置
+        }
+      }
+      
+      // 标记配置完成
+      localStorage.setItem('wizardCompleted', 'true');
+      
+      // 通知主进程
+      ipcRenderer.send('wizard-completed');
+      
+      alert('配置完成！即将进入主界面...');
+    }
+    
+    // 检查是否需要显示向导
+    async function checkWizard() {
+      const status = await ipcRenderer.invoke('get-service-status');
+      // 如果已有配置，跳过向导
+      if (status.configDir && localStorage.getItem('wizardCompleted')) {
+        ipcRenderer.send('wizard-completed');
+      }
+    }
+    
+    // 启动时检查
+    // checkWizard();
+  </script>
+</body>
+</html>
