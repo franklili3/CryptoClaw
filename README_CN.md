@@ -358,8 +358,8 @@ MIT License
 
 ## 📞 联系方式
 
-- X (Twitter): [@cryptoclaw_ai](https://x.com/cryptoclaw_ai)
-- GitHub: [franklili3/cryptoclaw](https://github.com/franklili3/cryptoclaw)
+- X (Twitter): [@cryptoclawai](https://x.com/cryptoclawai)
+- GitHub: [franklili3/CryptoClaw](https://github.com/franklili3/CryptoClaw)
 
 ---
 

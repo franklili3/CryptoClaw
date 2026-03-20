@@ -297,10 +297,8 @@ CryptoClaw/
 
 ## 🔗 Links
 
-- 🌐 Website: [cryptoclaw.pro](https://cryptoclaw.pro)
-- 📖 Docs: [docs.cryptoclaw.pro](https://docs.cryptoclaw.pro)
-- 💬 Telegram: [@CryptoClawBot](https://t.me/CryptoClawBot)
-- 🐦 Twitter: [@cryptoclaw88](https://twitter.com/cryptoclaw88)
+
+- 🐦 X: [@cryptoclawai](https://x.com/cryptoclawai)
 
 ## 📄 License
 

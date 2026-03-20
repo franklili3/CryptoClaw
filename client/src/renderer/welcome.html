@@ -330,7 +330,8 @@
   </div>
 
   <script>
-    const { ipcRenderer } = require('electron');
+    // 使用 preload 暴露的 API
+    const api = window.electronAPI;
     
     let currentStep = 1;
     
@@ -349,7 +350,6 @@
     async function saveLlmConfig() {
       const provider = document.getElementById('llm-provider').value;
       const apiKey = document.getElementById('llm-api-key').value;
-      const baseUrl = document.getElementById('llm-base-url').value;
       const saveKey = document.getElementById('save-key').checked;
       
       if (!apiKey) {
@@ -359,11 +359,7 @@
       
       if (saveKey) {
         try {
-          await ipcRenderer.invoke('add-api-key', {
-            provider: provider,
-            key: apiKey,
-            name: `${provider} LLM Key`
-          });
+          await api.addApiKey(provider, apiKey, `${provider} LLM Key`);
           alert('API Key 已安全保存！');
         } catch (error) {
           console.error('Save API Key failed:', error);
@@ -382,7 +378,7 @@
       if (token) {
         try {
           // 测试连接
-          await ipcRenderer.invoke('connect-gateway', { host, port, token });
+          await api.connectGateway(host, parseInt(port), token);
           alert('Gateway 连接成功！');
         } catch (error) {
           console.error('Gateway connection failed:', error);
@@ -393,23 +389,14 @@
       // 标记配置完成
       localStorage.setItem('wizardCompleted', 'true');
       
-      // 通知主进程
-      ipcRenderer.send('wizard-completed');
+      // 保存配置
+      await api.setConfig('wizardCompleted', true);
       
       alert('配置完成！即将进入主界面...');
+      
+      // 通知主进程切换页面
+      window.location.href = 'index.html';
     }
-    
-    // 检查是否需要显示向导
-    async function checkWizard() {
-      const status = await ipcRenderer.invoke('get-service-status');
-      // 如果已有配置，跳过向导
-      if (status.configDir && localStorage.getItem('wizardCompleted')) {
-        ipcRenderer.send('wizard-completed');
-      }
-    }
-    
-    // 启动时检查
-    // checkWizard();
   </script>
 </body>
 </html>

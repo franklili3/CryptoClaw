@@ -64,19 +64,25 @@ function createMainWindow() {
   mainWindow = new BrowserWindow({
     x: mainWindowState.x,
     y: mainWindowState.y,
-    width: mainWindowState.width,
-    height: mainWindowState.height,
+    width: mainWindowState.width || 1000,
+    height: mainWindowState.height || 700,
     minWidth: 800,
     minHeight: 600,
+    maxWidth: 1400,
+    maxHeight: 900,
     title: 'CryptoClaw',
     icon: path.join(__dirname, '../../resources/icon.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      devTools: true
     },
     show: false // 先隐藏，加载完成后显示
   });
+  
+  // 确保窗口不会全屏
+  mainWindow.setFullScreenable(false);
 
   // 管理窗口状态
   mainWindowState.manage(mainWindow);
