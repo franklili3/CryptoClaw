@@ -1,77 +1,284 @@
-<p align="center">
-  <img src="assets/CryptoClaw_banner_200.jpg" alt="CryptoClaw Logo" width="200">
-</p>
+# CryptoClaw
 
-<h1 align="center">CryptoClaw 🦞</h1>
+> AI-Powered Crypto Trading Assistant - Chat-first, Local-first, Pay only on profit
 
-<p align="center">
-  <b>Your AI quant trading team, right in your chat.</b>
-</p>
+[English](README.md) | [中文文档](README_CN.md)
 
-<p align="center">
-  <a href="README_CN.md">简体中文</a> | English
-</p>
+## 📋 Requirements
 
----
+| Requirement | Minimum | Recommended |
+|-------------|---------|-------------|
+| **OS** | macOS 11+, Ubuntu 20.04+, Windows 10+ | macOS 13+, Ubuntu 22.04+ |
+| **RAM** | 4 GB | 8 GB+ |
+| **Disk** | 10 GB | 20 GB+ |
+| **Docker** | 20.10+ | 24.0+ |
+| **Architecture** | x86_64 (AMD64), ARM64 | - |
 
-**CryptoClaw** is an AI-powered cryptocurrency quantitative trading assistant that lets you write trading strategies in natural language and execute everything through Telegram or WhatsApp conversations.
+### Supported Architectures
+
+CryptoClaw supports multiple CPU architectures:
+
+| Architecture | Docker Platform | Compatible Devices |
+|--------------|-----------------|-------------------|
+| x86_64 | linux/amd64 | Intel/AMD PCs, Servers, Cloud VMs |
+| ARM64 | linux/arm64 | Apple Silicon (M1/M2/M3), Raspberry Pi 4+, AWS Graviton |
+
+## 🚀 Installation
+
+### Method 1: One-Line Install (Recommended)
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.sh | bash
+```
+
+**Windows (PowerShell Administrator):**
+```powershell
+irm https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.ps1 | iex
+```
+
+The installer will:
+1. ✅ Detect your OS and CPU architecture automatically
+2. ✅ Install Docker if not present
+3. ✅ Pull the correct multi-architecture Docker image
+4. ✅ Set up configuration files
+5. ✅ Create management scripts
+
+### Method 2: Manual Installation
+
+#### Step 1: Install Docker
+
+**macOS:**
+```bash
+# Using Homebrew
+brew install --cask docker
+
+# Or download from https://docs.docker.com/desktop/install/mac-install/
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+# Install Docker
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+
+# Log out and back in for group changes
+```
+
+**Windows:**
+Download and install [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/)
+
+#### Step 2: Clone Repository
+
+```bash
+git clone https://github.com/franklili3/CryptoClaw.git
+cd CryptoClaw
+```
+
+#### Step 3: Run Installer
+
+```bash
+chmod +x scripts/install.sh
+./scripts/install.sh
+```
+
+The installer will guide you through:
+- Platform detection (auto-detects x86_64 or ARM64)
+- Configuration wizard (Telegram Bot, LLM API)
+- Docker image pull (correct architecture)
+
+### Method 3: Docker Compose
+
+```bash
+# Clone repository
+git clone https://github.com/franklili3/CryptoClaw.git
+cd CryptoClaw
+
+# Copy and edit configuration
+cp ~/.cryptoclaw/config/.env.example ~/.cryptoclaw/config/.env
+# Edit .env with your API keys
+
+# Start services
+docker-compose -f ~/.cryptoclaw/config/docker-compose.yml up -d
+```
+
+## ⚙️ Configuration
+
+### 1. Create Telegram Bot
+
+1. Open Telegram and search for **@BotFather**
+2. Send `/newbot` command
+3. Follow prompts to name your bot
+4. Copy the token (format: `123456789:ABCdef...`)
+
+### 2. Get LLM API Key
+
+Choose one:
+
+| Provider | Get API Key | Recommended Model |
+|----------|-------------|-------------------|
+| OpenAI | [platform.openai.com](https://platform.openai.com) | gpt-4 |
+| Anthropic | [console.anthropic.com](https://console.anthropic.com) | claude-sonnet-4-5 |
+| Local | Run local model | - |
+
+### 3. Edit Configuration
+
+```bash
+nano ~/.cryptoclaw/config/.env
+```
+
+```env
+# Required
+TELEGRAM_BOT_TOKEN=123456789:ABCdef...
+
+# LLM Configuration
+LLM_PROVIDER=openai
+LLM_API_KEY=sk-...
+LLM_MODEL=gpt-4
+
+# Exchange APIs (optional, for live trading)
+# BINANCE_API_KEY=your_key
+# BINANCE_API_SECRET=your_secret
+```
+
+## 🎮 Usage
+
+### Start Service
+
+```bash
+~/.cryptoclaw/start.sh
+```
+
+### Check Status
+
+```bash
+~/.cryptoclaw/status.sh
+```
+
+### Stop Service
+
+```bash
+~/.cryptoclaw/stop.sh
+```
+
+### Update
+
+```bash
+~/.cryptoclaw/update.sh
+```
+
+### Telegram Commands
+
+| Command | Description |
+|---------|-------------|
+| `/start` | Initialize bot |
+| `/help` | Show help |
+| `/backtest <strategy>` | Run backtest |
+| `/trade <pair>` | Start paper trading |
+| `/status` | Show portfolio |
+
+## 🔧 Advanced
+
+### Multi-Architecture Build
+
+For developers building custom images:
+
+```bash
+# Build for current platform
+./scripts/build-docker.sh --local
+
+# Build multi-architecture (requires Docker Buildx)
+./scripts/build-docker.sh --multi
+
+# Build and push to registry
+./scripts/build-docker.sh --multi --push
+
+# Build for ARM64 only
+./scripts/build-docker.sh --arm64 --local
+```
+
+### Docker Commands
+
+```bash
+# Pull specific architecture
+docker pull --platform linux/amd64 cryptoclaw/cryptoclaw:latest
+docker pull --platform linux/arm64 cryptoclaw/cryptoclaw:latest
+
+# Run container
+docker run -d \
+  --name cryptoclaw \
+  -p 8080:8080 \
+  -v ~/.cryptoclaw/config:/app/config \
+  -v ~/.cryptoclaw/user_data:/app/user_data \
+  cryptoclaw/cryptoclaw:latest
+```
+
+## 🐛 Troubleshooting
+
+### Architecture Mismatch
+
+```bash
+# Check your system architecture
+uname -m
+# x86_64 = AMD64
+# aarch64 = ARM64
+
+# Verify image architecture
+docker inspect --format='{{.Architecture}}' cryptoclaw/cryptoclaw:latest
+```
+
+### Docker Not Running
+
+```bash
+# macOS: Open Docker Desktop
+open -a Docker
+
+# Linux: Start service
+sudo systemctl start docker
+```
+
+### Network Issues
+
+```bash
+# Test connectivity
+curl -s https://api.github.com | head -5
+
+# Check Docker network
+docker network ls
+```
 
 ## ✨ Features
 
-- 🗣️ **Natural Language Strategies** - No coding required, just describe your strategy
-- 📱 **Chat-First Interface** - Everything via Telegram/WhatsApp
-- 📊 **One-Click Backtesting** - AI explains results in plain language
-- 💰 **Pay Only on Profit** - Free to use, 10% fee only when you profit
-- 🔐 **Local-First Privacy** - API keys encrypted locally, never uploaded
-- 📈 **Built-in Strategies** - BTC/ETH mean reversion strategies included
+| Feature | Description |
+|---------|-------------|
+| 🤖 **Chat-First** | All trading operations via Telegram/WhatsApp |
+| 🔐 **Local-First** | Your API keys stay on your device (AES-256 encrypted) |
+| 💰 **Pay on Profit** | 10% fee only when you make profit |
+| 📊 **Backtesting** | Test strategies with historical data |
+| 📈 **Paper Trading** | Practice without real money |
+| ⚡ **Live Trading** | Execute trades automatically |
 
-## 🚀 Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/franklili3/cryptoclaw.git
-
-# Install dependencies
-cd cryptoclaw
-npm install
-
-# Start the application
-npm start
-```
-
-## 🏗️ Architecture
+## 📁 Project Structure
 
 ```
-┌─────────────────┐     ┌─────────────────┐
-│  Telegram/      │     │  Desktop Client │
-│  WhatsApp Bot   │     │  (Electron)     │
-│  (Chat UI)      │     │  (API Keys)     │
-└────────┬────────┘     └────────┬────────┘
-         │                       │
-         └───────────┬───────────┘
-                     │
-         ┌───────────┴───────────┐
-         │      OpenClaw         │
-         │   (AI Agent)          │
-         └───────────┬───────────┘
-                     │
-         ┌───────────┴───────────┐
-         │     Freqtrade         │
-         │   (Quant Engine)      │
-         └───────────────────────┘
+CryptoClaw/
+├── docs/                    # Documentation
+│   ├── requirement.md       # Product Requirements (CN)
+│   ├── requirement_en.md    # Product Requirements (EN)
+│   ├── design.md            # Design Document (CN)
+│   ├── design_en.md         # Design Document (EN)
+│   ├── technical-spec.md    # Technical Spec (CN)
+│   └── technical-spec_en.md # Technical Spec (EN)
+├── scripts/                 # Installation scripts
+│   ├── install.sh           # macOS/Linux installer
+│   ├── install.ps1          # Windows installer
+│   └── init-config.sh       # Configuration wizard
+├── skills/                  # OpenClaw Skills
+│   ├── freqtrade/           # Trading skill
+│   └── billing/             # Billing skill
+├── tests/                   # Test scripts
+└── installer/               # Desktop installer (coming soon)
 ```
-
-## 💼 Business Model
-
-- ✅ **Free to use** - No subscription, no upfront cost
-- ✅ **Pay only on profit** - 10% of profits, high watermark mechanism
-- ✅ **No profit, no fee** - Losses and recovery periods are not charged
-
-## 🔒 Privacy & Security
-
-- 🔐 API keys stored locally with AES-256 encryption
-- 🔐 Trading data never leaves your device
-- 🔐 No cloud storage of sensitive information
 
 ## 🛠️ Tech Stack
 
@@ -79,37 +286,24 @@ npm start
 |-----------|------------|
 | AI Agent | OpenClaw |
 | Quant Engine | Freqtrade |
-| Desktop | Electron |
-| Cloud | Supabase |
-| Messaging | Telegram Bot API |
+| Desktop Client | Electron |
+| Cloud Services | Supabase (minimal) |
 
-## 📋 Roadmap
+## 📚 Documentation
 
-- [x] Requirements & Architecture Design
-- [ ] MVP: Backtesting + Paper Trading
-- [ ] Live Trading Integration
-- [ ] Payment System
-- [ ] More Strategies
+- [Product Requirements](docs/requirement_en.md)
+- [Design Document](docs/design_en.md)
+- [Technical Specification](docs/technical-spec_en.md)
 
-## ⚠️ Disclaimer
+## 🔗 Links
 
-This is a tool, not financial advice. Cryptocurrency trading carries significant risk. Past performance does not guarantee future results. Always do your own research.
+
+- 🐦 X: [@cryptoclawai](https://x.com/cryptoclawai)
 
 ## 📄 License
 
-MIT License
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📞 Contact
-
-- X (Twitter): [@cryptoclaw_ai](https://x.com/cryptoclaw_ai)
-- GitHub: [franklili3/cryptoclaw](https://github.com/franklili3/cryptoclaw)
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-## Build in Public 🚀
-
-Follow the development journey on X
+*Built with ❤️ by the CryptoClaw Team*

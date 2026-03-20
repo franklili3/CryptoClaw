@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "skills": {
+    "algo": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "3609a22b7fbd1ce4e4b265a62bcfb4b8fd4d539adab9d4c091bf8f2ab2a8d2a4"
+    },
+    "alpha": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "6ade6a93ae7e9f70fb6a77465f91cba385072a1b222ab7d44d6253eb42a46feb"
+    },
+    "assets": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "13ba46981a0b78f2db3ddbe6316ac9e40fd162b14faafe493d915d17ad682b87"
+    },
+    "convert": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "c8499955ee8daa4543e47df895804e24eed14027d80ca070cf246fc90f008a79"
+    },
+    "crypto-market-rank": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "0d3428cfe4386dbc8e9498629e2a3dc1b0244e603cac6a439ea8b2f82df7af74"
+    },
+    "derivatives-trading-coin-futures": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "81e9053bde91c67075e24ff8eafa281a51921b1e1eb9fe2b1c3477b85ae306f8"
+    },
+    "derivatives-trading-options": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "4c58db7f4ad31139a53f3261c4c62bdc333e49745e79b144d5b171c04faac5ec"
+    },
+    "derivatives-trading-portfolio-margin": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "f46e8c1da20f053daccd462c14aa519b9bdb8acf4142ab1637400f8a6dd9572d"
+    },
+    "derivatives-trading-portfolio-margin-pro": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "38f4b4ae5f32df735da1b491f7f5d50de8ed6ef8fa46875bb28f9824a1ae7a0d"
+    },
+    "derivatives-trading-usds-futures": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "305627d67d41459c81f03fd08b4f9e2fe084dda1429f3850ba404063009e54e8"
+    },
+    "margin-trading": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "2cd97639db7772133133f96a8e6fe1c542d51b5de6a38d9e117ef0a70d8b5c58"
+    },
+    "meme-rush": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "ec36bf098d049e63614c6224b7e14455ca813872ebbec2306114b72a692de865"
+    },
+    "onchain-pay-open-api": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "81216938a2551cfec7ce9665c7b609d31715f6e2d56c40587a1eb5a36b4ca5d3"
+    },
+    "query-address-info": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "cddc06f4359fb83c3d54c4d6f5c96cad1f3a51c840305595e65b67fd48db117c"
+    },
+    "query-token-audit": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "a625548dc9aa0820c325e3585e1f2a1fe6adc7fb8c0de1290e1f5f05f86c8ff4"
+    },
+    "query-token-info": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "70c448eec1a9349adf8977ba180ed421be62cc01d49b22bc4035eaae8baac605"
+    },
+    "spot": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "3ad001002acf73cf62a07de731aa930695870ff9b4a6dc8411df36ba6d4f7630"
+    },
+    "square-post": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "5323d876e326674c9a88a7b36e3d88fcbb8cdc39b14282e412eaf953ca3ad741"
+    },
+    "sub-account": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "c5a6c04de452eed2133d5dd26b4dcd661bb89876a836a1d1d80ea15137501df1"
+    },
+    "trading-signal": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "computedHash": "3363c91803ed82496034ffbf54b5407ecc9a7713c994fe941328b7be6fccdcf6"
+    }
+  }
+}

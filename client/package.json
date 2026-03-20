@@ -1,0 +1,49 @@
+{
+  "name": "cryptoclaw-client",
+  "version": "1.0.0",
+  "description": "CryptoClaw Desktop Client - Secure API Key Management",
+  "main": "src/main/index.js",
+  "productName": "CryptoClaw",
+  "author": {
+    "name": "CryptoClaw Team",
+    "email": "support@cryptoclaw.pro"
+  },
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux",
+    "pack": "electron-builder --dir",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "electron-log": "^5.0.0",
+    "electron-store": "^8.1.0",
+    "electron-updater": "^6.1.0",
+    "electron-window-state": "^5.0.3",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "electron": "^30.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "pro.cryptoclaw.client",
+    "productName": "CryptoClaw",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.finance"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}
