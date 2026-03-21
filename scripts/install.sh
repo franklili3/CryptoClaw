@@ -123,9 +123,16 @@ install_docker() {
 
 # 拉取 Docker 镜像
 pull_image() {
-    echo -e "\n${BLUE}[步骤 2/5]${NC} 拉取 CryptoClaw 镜像..."
+    echo -e "\n${BLUE}[步骤 2/5]${NC} 检查 CryptoClaw 镜像..."
     
     IMAGE="cryptoclaw/cryptoclaw:${VERSION}"
+    
+    # 先检查本地镜像是否存在
+    if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^${IMAGE}$"; then
+        echo -e "${GREEN}[✓]${NC} 本地镜像已存在: $IMAGE"
+        return 0
+    fi
+    
     echo -e "${BLUE}[信息]${NC} 正在拉取镜像: $IMAGE"
     echo -e "${YELLOW}[!]${NC} 镜像约 1GB，可能需要几分钟..."
     
@@ -165,17 +172,36 @@ EOF
 
 # 下载桌面客户端
 download_client() {
-    echo -e "\n${BLUE}[步骤 4/5]${NC} 下载桌面客户端..."
+    echo -e "\n${BLUE}[步骤 4/5]${NC} 安装桌面客户端..."
     
     CLIENT_DIR="$HOME/.cryptoclaw/client"
     mkdir -p "$CLIENT_DIR"
     
+    # 检查本地构建的客户端
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+    
     if [[ "$OS" == "macos" ]]; then
-        CLIENT_URL="https://github.com/franklili3/CryptoClaw/releases/download/v${CLIENT_VERSION}/CryptoClaw-${CLIENT_VERSION}.dmg"
+        LOCAL_CLIENT="$PROJECT_DIR/client/dist/CryptoClaw-1.0.0-arm64.dmg"
         CLIENT_FILE="$CLIENT_DIR/CryptoClaw.dmg"
     elif [[ "$OS" == "linux" ]]; then
-        CLIENT_URL="https://github.com/franklili3/CryptoClaw/releases/download/v${CLIENT_VERSION}/CryptoClaw-${CLIENT_VERSION}.AppImage"
+        LOCAL_CLIENT="$PROJECT_DIR/client/dist/CryptoClaw-1.0.0.AppImage"
         CLIENT_FILE="$CLIENT_DIR/CryptoClaw.AppImage"
+    fi
+    
+    # 优先使用本地构建的客户端
+    if [ -f "$LOCAL_CLIENT" ]; then
+        echo -e "${GREEN}[✓]${NC} 发现本地构建的客户端"
+        cp "$LOCAL_CLIENT" "$CLIENT_FILE"
+        echo -e "${GREEN}[✓]${NC} 客户端已复制到: $CLIENT_FILE"
+        return 0
+    fi
+    
+    # 本地没有则从 GitHub 下载
+    if [[ "$OS" == "macos" ]]; then
+        CLIENT_URL="https://github.com/franklili3/CryptoClaw/releases/download/v${CLIENT_VERSION}/CryptoClaw-${CLIENT_VERSION}.dmg"
+    elif [[ "$OS" == "linux" ]]; then
+        CLIENT_URL="https://github.com/franklili3/CryptoClaw/releases/download/v${CLIENT_VERSION}/CryptoClaw-${CLIENT_VERSION}.AppImage"
     fi
     
     echo -e "${BLUE}[信息]${NC} 下载地址: $CLIENT_URL"
