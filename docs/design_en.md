@@ -1,4 +1,4 @@
-# CryptoClaw - Design Document
+# CryptoQClaw - Design Document
 
 > AI Quantitative Trading System based on OpenClaw + Freqtrade
 
@@ -12,7 +12,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CryptoClaw System                              │
+│                              CryptoQClaw System                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
@@ -75,7 +75,7 @@ OpenClaw's core architecture is **Soul → Agent → Skill → Tool → Script**
 │  Layer 1: SOUL                                                              │
 │  ├─ SOUL.md - Defines Agent's persona, boundaries, tone                    │
 │  ├─ "Who am I? Why do I exist?"                                            │
-│  └─ CryptoClaw: "I am your AI quantitative trading assistant"              │
+│  └─ CryptoQClaw: "I am your AI quantitative trading assistant"              │
 │                                                                             │
 │  Layer 2: AGENT                                                             │
 │  ├─ AGENTS.md - Runtime behavior rules, memory, rules                      │
@@ -89,7 +89,7 @@ OpenClaw's core architecture is **Soul → Agent → Skill → Tool → Script**
 │  │   ├─ Bundled: /usr/lib/node_modules/openclaw/skills/                    │
 │  │   ├─ Managed: ~/.openclaw/skills/                                        │
 │  │   └─ Workspace: <workspace>/skills/                                      │
-│  └─ CryptoClaw Skills:                                                      │
+│  └─ CryptoQClaw Skills:                                                      │
 │      ├─ freqtrade - Freqtrade integration                                  │
 │      ├─ billing - Billing system                                           │
 │      └─ trading-signals - Trading signals                                  │
@@ -138,7 +138,7 @@ OpenClaw's core architecture is **Soul → Agent → Skill → Tool → Script**
     list: [
       {
         id: "cryptoclaw",
-        name: "CryptoClaw",
+        name: "CryptoQClaw",
         workspace: "~/.cryptoclaw/workspace",
         model: "anthropic/claude-sonnet-4-5",
         default: true,
@@ -179,7 +179,7 @@ OpenClaw's core architecture is **Soul → Agent → Skill → Tool → Script**
 **Directory Structure (Based on Freqtrade user_data standard):**
 
 ```
-~/.cryptoclaw/                    # CryptoClaw root directory
+~/.cryptoclaw/                    # CryptoQClaw root directory
 ├── user_data/                    # Freqtrade standard user_data directory
 │   ├── config.json               # Freqtrade main config file
 │   ├── config-private.json       # Exchange API keys (encrypted, not uploaded)
@@ -213,7 +213,7 @@ OpenClaw's core architecture is **Soul → Agent → Skill → Tool → Script**
 ├── tradesv3.sqlite               # Freqtrade trades database (live)
 ├── tradesv3.dryrun.sqlite        # Freqtrade trades database (paper)
 │
-├── cryptoclaw.db                 # CryptoClaw local database
+├── cryptoclaw.db                 # CryptoQClaw local database
 │                                 # - User info, watermarks, bills, etc.
 │
 ├── workspace/                    # OpenClaw Agent workspace
@@ -234,7 +234,7 @@ OpenClaw's core architecture is **Soul → Agent → Skill → Tool → Script**
 │
 └── logs/                         # Logs directory
     ├── freqtrade.log             # Freqtrade logs
-    └── cryptoclaw.log            # CryptoClaw logs
+    └── cryptoclaw.log            # CryptoQClaw logs
 ```
 
 **Directory Explanation:**
@@ -248,7 +248,7 @@ OpenClaw's core architecture is **Soul → Agent → Skill → Tool → Script**
 | `user_data/data/` | Historical data directory, organized by exchange and timeframe |
 | `tradesv3.sqlite` | Freqtrade live trading database |
 | `tradesv3.dryrun.sqlite` | Freqtrade paper trading database |
-| `cryptoclaw.db` | CryptoClaw business database (watermarks, bills, payments) |
+| `cryptoclaw.db` | CryptoQClaw business database (watermarks, bills, payments) |
 | `workspace/` | OpenClaw Agent runtime directory |
 
 ### 2.3 Skills Design
@@ -644,9 +644,9 @@ See:
 
 | Platform | Package | Description |
 |----------|---------|-------------|
-| **macOS** | CryptoClaw.dmg / .app | Drag to Applications |
-| **Windows** | CryptoClaw-Setup.exe | Install wizard |
-| **Linux** | CryptoClaw.AppImage / .deb / .rpm | Portable / Package manager |
+| **macOS** | CryptoQClaw.dmg / .app | Drag to Applications |
+| **Windows** | CryptoQClaw-Setup.exe | Install wizard |
+| **Linux** | CryptoQClaw.AppImage / .deb / .rpm | Portable / Package manager |
 
 **2. Desktop Client First-Run Wizard:**
 
@@ -657,9 +657,9 @@ See:
 │                                                             │
 │  Step 1: Welcome                                            │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  🎉 Welcome to CryptoClaw!                           │   │
+│  │  🎉 Welcome to CryptoQClaw!                           │   │
 │  │                                                      │   │
-│  │  CryptoClaw is an AI-powered quantitative trading   │   │
+│  │  CryptoQClaw is an AI-powered quantitative trading   │   │
 │  │  assistant                                           │   │
 │  │                                                      │   │
 │  │  This wizard will guide you through setup           │   │
@@ -683,7 +683,7 @@ See:
 │                                                             │
 │  Step 3: Download/Start Container                           │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  📦 Downloading CryptoClaw Service                   │   │
+│  │  📦 Downloading CryptoQClaw Service                   │   │
 │  │                                                      │   │
 │  │  Downloading cryptoclaw/cryptoclaw:latest...        │   │
 │  │  [████████████████░░░░░░░░] 65%                     │   │
@@ -747,7 +747,7 @@ See:
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │  ✅ Setup Complete!                                  │   │
 │  │                                                      │   │
-│  │  CryptoClaw service is now running                   │   │
+│  │  CryptoQClaw service is now running                   │   │
 │  │                                                      │   │
 │  │  📱 Search for your bot in Telegram to start        │   │
 │  │  💡 You can modify settings anytime in Settings     │   │
@@ -856,7 +856,7 @@ Docker Hub: cryptoclaw/cryptoclaw
 #### 6.5.2 GitHub Release
 
 ```
-https://github.com/franklili3/CryptoClaw/releases
+https://github.com/franklili3/CryptoQClaw/releases
 ├── Source code (zip)
 ├── Source code (tar.gz)
 ├── install.sh      # Linux/macOS installer
@@ -886,7 +886,7 @@ https://github.com/franklili3/CryptoClaw/releases
 │     ~/.cryptoclaw/start.sh                                  │
 │                                                             │
 │  5. Telegram Binding                                        │
-│     Search @CryptoClawBot                                   │
+│     Search @CryptoQClawBot                                   │
 │     Send /start to bind account                             │
 │                                                             │
 │  6. Configure API Keys (via desktop client)                │
@@ -947,4 +947,4 @@ See [Technical Spec - Installation Verification Commands](technical-spec_en.md#8
 
 **Document Version:** v1.1  
 **Last Updated:** 2026-03-18  
-**Author:** CryptoClaw Team
+**Author:** CryptoQClaw Team

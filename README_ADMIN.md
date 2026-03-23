@@ -1,8 +1,8 @@
-# CryptoClaw 管理员指南
+# CryptoQClaw 管理员指南
 
 > 构建和发布指南
 
-本文档面向 CryptoClaw 项目维护者，包含构建、测试、发布的完整流程。
+本文档面向 CryptoQClaw 项目维护者，包含构建、测试、发布的完整流程。
 
 ---
 
@@ -74,8 +74,8 @@ export DOCKER_PASSWORD=your_token
 ### 克隆仓库
 
 ```bash
-git clone https://github.com/franklili3/CryptoClaw.git
-cd CryptoClaw
+git clone https://github.com/franklili3/CryptoQClaw.git
+cd CryptoQClaw
 ```
 
 ### 安装依赖
@@ -326,9 +326,9 @@ npm run build:mac -- --universal
 
 ```
 dist/
-├── CryptoClaw-1.0.0.dmg           # Intel
-├── CryptoClaw-1.0.0-arm64.dmg     # Apple Silicon
-├── CryptoClaw-1.0.0-universal.dmg # 通用
+├── CryptoQClaw-1.0.0.dmg           # Intel
+├── CryptoQClaw-1.0.0-arm64.dmg     # Apple Silicon
+├── CryptoQClaw-1.0.0-universal.dmg # 通用
 └── ...
 ```
 
@@ -351,8 +351,8 @@ npm run build:win -- --win nsis,portable
 
 ```
 dist/
-├── CryptoClaw Setup 1.0.0.exe     # 安装包
-├── CryptoClaw 1.0.0.exe           # 便携版
+├── CryptoQClaw Setup 1.0.0.exe     # 安装包
+├── CryptoQClaw 1.0.0.exe           # 便携版
 └── ...
 ```
 
@@ -377,7 +377,7 @@ npm run build:linux -- --linux AppImage,deb
 
 ```
 dist/
-├── CryptoClaw-1.0.0.AppImage      # AppImage (通用)
+├── CryptoQClaw-1.0.0.AppImage      # AppImage (通用)
 ├── cryptoclaw_1.0.0_amd64.deb     # Debian/Ubuntu
 ├── cryptoclaw-1.0.0.tar.gz        # 压缩包
 └── ...
@@ -431,7 +431,7 @@ npm run build:win
 publish:
   provider: github
   owner: franklili3
-  repo: CryptoClaw
+  repo: CryptoQClaw
   releaseType: release
 
 autoUpdate:
@@ -457,13 +457,13 @@ autoUpdate:
 
 ```bash
 # macOS
-open dist/CryptoClaw-1.0.0.dmg
+open dist/CryptoQClaw-1.0.0.dmg
 
 # Windows (PowerShell)
-Start-Process "dist\CryptoClaw Setup 1.0.0.exe"
+Start-Process "dist\CryptoQClaw Setup 1.0.0.exe"
 
 # Linux
-./dist/CryptoClaw-1.0.0.AppImage
+./dist/CryptoQClaw-1.0.0.AppImage
 ```
 
 #### 自动化测试
@@ -506,10 +506,10 @@ npx electron-builder --publish always
 2. 手动上传到 GitHub Releases：
    ```bash
    gh release upload v1.0.0 \
-     dist/CryptoClaw-1.0.0.dmg \
-     dist/CryptoClaw-1.0.0-arm64.dmg \
-     dist/CryptoClaw Setup 1.0.0.exe \
-     dist/CryptoClaw-1.0.0.AppImage
+     dist/CryptoQClaw-1.0.0.dmg \
+     dist/CryptoQClaw-1.0.0-arm64.dmg \
+     dist/CryptoQClaw Setup 1.0.0.exe \
+     dist/CryptoQClaw-1.0.0.AppImage
    ```
 
 ### 客户端构建配置
@@ -518,7 +518,7 @@ npx electron-builder --publish always
 
 ```yaml
 appId: pro.cryptoclaw.client
-productName: CryptoClaw
+productName: CryptoQClaw
 
 # macOS 配置
 mac:
@@ -625,7 +625,7 @@ git push origin v1.0.0
 2. ✅ 推送到 Docker Hub
 3. ✅ 创建 GitHub Release
 
-查看进度：`https://github.com/franklili3/CryptoClaw/actions`
+查看进度：`https://github.com/franklili3/CryptoQClaw/actions`
 
 ### 4. 手动发布（备用）
 
@@ -648,13 +648,13 @@ docker inspect cryptoclaw/cryptoclaw:$VERSION | grep Architecture
 ```bash
 # 使用 gh CLI
 gh release create v1.0.0 \
-  --title "CryptoClaw v1.0.0" \
+  --title "CryptoQClaw v1.0.0" \
   --notes "## 新功能
 - 多架构支持
 
 ## 安装
 \`\`\`bash
-curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoQClaw/main/scripts/install.sh | bash
 \`\`\`
 "
 ```
@@ -776,9 +776,9 @@ strategy:
 
 | 平台 | 产物 |
 |------|------|
-| macOS | `CryptoClaw-{version}.dmg`, `CryptoClaw-{version}-arm64.dmg` |
-| Windows | `CryptoClaw Setup {version}.exe`, `CryptoClaw {version}.exe` |
-| Linux | `CryptoClaw-{version}.AppImage`, `cryptoclaw_{version}_amd64.deb` |
+| macOS | `CryptoQClaw-{version}.dmg`, `CryptoQClaw-{version}-arm64.dmg` |
+| Windows | `CryptoQClaw Setup {version}.exe`, `CryptoQClaw {version}.exe` |
+| Linux | `CryptoQClaw-{version}.AppImage`, `cryptoclaw_{version}_amd64.deb` |
 
 #### 手动触发客户端构建
 

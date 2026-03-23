@@ -1,6 +1,6 @@
 # Freqtrade Skill
 
-AI-powered trading strategy assistant for CryptoClaw.
+AI-powered trading strategy assistant for CryptoQClaw.
 
 ## Features
 

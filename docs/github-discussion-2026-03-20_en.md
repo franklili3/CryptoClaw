@@ -4,7 +4,7 @@
 
 ### 1. Electron Desktop Client Development
 
-Completed core features of the CryptoClaw desktop client:
+Completed core features of the CryptoQClaw desktop client:
 
 - **Welcome Wizard** - 3-step configuration (Welcome → LLM Config → Gateway Config)
 - **Main Dashboard** - Gateway management, API Keys management, service status
@@ -18,13 +18,13 @@ Based on requirements (US-01: First-time Installation Experience), created `scri
 
 ```bash
 # Users only need one command
-curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoQClaw/main/scripts/install.sh | bash
 ```
 
 **Features:**
 - ✅ Auto-detect OS (macOS/Linux)
 - ✅ Auto-detect and install Docker
-- ✅ Pull CryptoClaw Docker image
+- ✅ Pull CryptoQClaw Docker image
 - ✅ Download desktop client (.dmg/.AppImage)
 - ✅ Create launch script and desktop shortcuts
 
@@ -88,5 +88,5 @@ function isConfigured() {
 ---
 
 *Dev Log: #BuildInPublic Day 3*
-*Repo: github.com/franklili3/CryptoClaw*
+*Repo: github.com/franklili3/CryptoQClaw*
 *Follow: @cryptoclaw88*

@@ -1,4 +1,4 @@
-# CryptoClaw × TermiX-official/cryptoclaw 集成计划
+# CryptoQClaw × TermiX-official/cryptoclaw 集成计划
 
 > 基于 2026-03-20 分析，分阶段引入 TermiX 项目的优秀特性
 
@@ -24,7 +24,7 @@
 
 ```bash
 # 在项目根目录执行
-cd ~/clawd/CryptoClaw
+cd ~/clawd/CryptoQClaw
 npx skills add https://github.com/binance/binance-skills-hub
 ```
 
@@ -69,7 +69,7 @@ BINANCE_PROXY=http://127.0.0.1:7890
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                  CryptoClaw Gateway                  │
+│                  CryptoQClaw Gateway                  │
 │                                                     │
 │  ┌─────────────┐    gRPC     ┌─────────────────┐   │
 │  │   Node.js   │ ◄─────────► │   TEE Enclave   │   │
@@ -284,10 +284,10 @@ interface IACPCore {
 }
 ```
 
-#### 5.2 CryptoClaw 作为 Evaluator
+#### 5.2 CryptoQClaw 作为 Evaluator
 
 ```
-用户发布任务 → 锁定 USDC → 策略提供者提交 → CryptoClaw 验证 → 自动结算
+用户发布任务 → 锁定 USDC → 策略提供者提交 → CryptoQClaw 验证 → 自动结算
 ```
 
 #### 5.3 验证模式
@@ -314,7 +314,7 @@ interface IACPCore {
 ### 新增文件结构
 
 ```
-CryptoClaw/
+CryptoQClaw/
 ├── src/secure-vault/           # TEE 安全模块
 │   ├── types.ts                # 接口定义
 │   ├── local-vault.ts          # 本地加密存储

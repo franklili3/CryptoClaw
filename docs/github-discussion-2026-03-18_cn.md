@@ -133,5 +133,5 @@ Local-first = trust-first.
 ---
 
 *进度日志：#BuildInPublic 第 2 天*
-*仓库：github.com/franklili3/CryptoClaw*
+*仓库：github.com/franklili3/CryptoQClaw*
 *关注：@cryptoclaw88*

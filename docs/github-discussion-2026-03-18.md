@@ -135,5 +135,5 @@ What documentation practices have worked well for your projects? Do you prefer:
 ---
 
 *Progress log: Day 2 of #BuildInPublic*
-*Repo: github.com/franklili3/CryptoClaw*
+*Repo: github.com/franklili3/CryptoQClaw*
 *Follow: @cryptoclaw88*

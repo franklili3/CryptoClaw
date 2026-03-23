@@ -1,5 +1,5 @@
 /**
- * CryptoClaw Desktop Client - Renderer Process
+ * CryptoQClaw Desktop Client - Renderer Process
  * 
  * UI 交互和 IPC 通信
  */
@@ -412,7 +412,7 @@ function openDocs() {
  * 打开 Telegram 支持
  */
 function openTelegram() {
-  window.electronAPI.openExternal('https://t.me/CryptoClawBot');
+  window.electronAPI.openExternal('https://t.me/CryptoQClawBot');
 }
 
 /**

@@ -1,5 +1,5 @@
 /**
- * CryptoClaw Desktop Client - Electron Main Process
+ * CryptoQClaw Desktop Client - Electron Main Process
  * 
  * 职责：
  * - 管理 API Key 的安全存储（AES-256 加密）
@@ -70,7 +70,7 @@ function createMainWindow() {
     minHeight: 600,
     maxWidth: 1400,
     maxHeight: 900,
-    title: 'CryptoClaw',
+    title: 'CryptoQClaw',
     icon: path.join(__dirname, '../../resources/icon.png'),
     webPreferences: {
       nodeIntegration: false,
@@ -119,10 +119,10 @@ function createMainWindow() {
       // 显示错误页面
       mainWindow.loadURL(`data:text/html,
         <html>
-        <head><title>CryptoClaw - Error</title></head>
+        <head><title>CryptoQClaw - Error</title></head>
         <body style="background:#1a1a2e;color:#fff;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;">
           <div style="text-align:center;">
-            <h1>🦀 CryptoClaw</h1>
+            <h1>🦀 CryptoQClaw</h1>
             <p style="color:#ff6464;">Failed to load application UI</p>
             <p style="color:#8892b0;font-size:14px;">Please check the installation or run from source</p>
             <p style="color:#64ffda;font-size:12px;margin-top:20px;">Searched paths:</p>
@@ -199,7 +199,7 @@ function createTray() {
     }
   ]);
   
-  tray.setToolTip('CryptoClaw');
+  tray.setToolTip('CryptoQClaw');
   tray.setContextMenu(contextMenu);
   
   tray.on('click', () => {
@@ -220,9 +220,9 @@ function createTray() {
 function createMenu() {
   const template = [
     {
-      label: 'CryptoClaw',
+      label: 'CryptoQClaw',
       submenu: [
-        { role: 'about', label: '关于 CryptoClaw' },
+        { role: 'about', label: '关于 CryptoQClaw' },
         { type: 'separator' },
         { 
           label: '偏好设置',
@@ -232,11 +232,11 @@ function createMenu() {
         { type: 'separator' },
         { role: 'services' },
         { type: 'separator' },
-        { role: 'hide', label: '隐藏 CryptoClaw' },
+        { role: 'hide', label: '隐藏 CryptoQClaw' },
         { role: 'hideOthers' },
         { role: 'unhide' },
         { type: 'separator' },
-        { role: 'quit', label: '退出 CryptoClaw' }
+        { role: 'quit', label: '退出 CryptoQClaw' }
       ]
     },
     {
@@ -283,7 +283,7 @@ function createMenu() {
         },
         { 
           label: 'Telegram 支持',
-          click: () => shell.openExternal('https://t.me/CryptoClawBot')
+          click: () => shell.openExternal('https://t.me/CryptoQClawBot')
         },
         { type: 'separator' },
         { 
@@ -537,7 +537,7 @@ function initIpcHandlers() {
                   scopes: ['operator.admin', 'operator.approvals', 'operator.pairing'],
                   caps: ['tool-events'],
                   auth: token ? { token: token } : undefined,
-                  userAgent: 'CryptoClaw/1.0.0',
+                  userAgent: 'CryptoQClaw/1.0.0',
                   locale: 'zh-CN'
                 }
               };
@@ -901,7 +901,7 @@ app.whenReady().then(() => {
   // 检查更新（延迟 3 秒）
   setTimeout(checkForUpdates, 3000);
   
-  log.info('CryptoClaw Client started');
+  log.info('CryptoQClaw Client started');
 });
 
 /**

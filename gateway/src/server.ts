@@ -55,7 +55,7 @@ app.get('/health', async (req, res) => {
 // API status
 app.get('/api/status', (req, res) => {
   res.json({
-    service: 'CryptoClaw Gateway',
+    service: 'CryptoQClaw Gateway',
     status: 'running',
     openclaw: {
       config: process.env.OPENCLAW_CONFIG,
@@ -214,7 +214,7 @@ app.get('/api/vault/attestation', async (req, res) => {
 // ================== 启动服务器 ==================
 
 app.listen(PORT, () => {
-  console.log(`CryptoClaw Gateway running on port ${PORT}`);
+  console.log(`CryptoQClaw Gateway running on port ${PORT}`);
   console.log(`OpenClaw config: ${process.env.OPENCLAW_CONFIG || 'not set'}`);
   console.log(`Vault type: ${vaultConfig.preferredType}`);
 

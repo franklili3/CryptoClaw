@@ -1,4 +1,4 @@
-# CryptoClaw - Product Requirements Document (PRD)
+# CryptoQClaw - Product Requirements Document (PRD)
 
 > One-click install, locally-running AI-powered crypto quantitative trading software
 
@@ -12,7 +12,7 @@
 
 ### 1.1 Core Value
 
-**CryptoClaw** — Your AI quantitative trading team, right in your chat
+**CryptoQClaw** — Your AI quantitative trading team, right in your chat
 
 | Dimension | Description |
 |------|------|
@@ -467,4 +467,4 @@ MIT License
 
 **Document Version:** v6.0  
 **Last Updated:** 2026-03-17  
-**Author:** CryptoClaw Team
+**Author:** CryptoQClaw Team

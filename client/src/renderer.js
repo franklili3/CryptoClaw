@@ -1,5 +1,5 @@
 /**
- * CryptoClaw Desktop Client - Renderer Process
+ * CryptoQClaw Desktop Client - Renderer Process
  * 
  * 职责：
 * - 将 IPC 渑收转换为 React 组件可理解的格式

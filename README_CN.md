@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/CryptoClaw_banner_200.jpg" alt="CryptoClaw Logo" width="200">
+  <img src="assets/CryptoQClaw_banner_200.jpg" alt="CryptoQClaw Logo" width="200">
 </p>
 
-<h1 align="center">CryptoClaw 🦞</h1>
+<h1 align="center">CryptoQClaw 🦞</h1>
 
 <p align="center">
   <b>你的 AI 量化交易团队，就在聊天里。</b>
@@ -14,7 +14,7 @@
 
 ---
 
-**CryptoClaw** 是一个 AI 驱动的加密货币量化交易助手，让你用自然语言编写交易策略，通过 Telegram 或 WhatsApp 对话完成所有操作。
+**CryptoQClaw** 是一个 AI 驱动的加密货币量化交易助手，让你用自然语言编写交易策略，通过 Telegram 或 WhatsApp 对话完成所有操作。
 
 ## ✨ 特性
 
@@ -37,7 +37,7 @@
 
 ### 支持的架构
 
-CryptoClaw 支持多种 CPU 架构：
+CryptoQClaw 支持多种 CPU 架构：
 
 | 架构 | Docker 平台 | 兼容设备 |
 |------|-------------|----------|
@@ -50,12 +50,12 @@ CryptoClaw 支持多种 CPU 架构：
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoQClaw/main/scripts/install.sh | bash
 ```
 
 **Windows (PowerShell 管理员):**
 ```powershell
-irm https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/franklili3/CryptoQClaw/main/scripts/install.ps1 | iex
 ```
 
 安装程序会自动：
@@ -115,8 +115,8 @@ sudo usermod -aG docker $USER
 #### 步骤 2：克隆仓库
 
 ```bash
-git clone https://github.com/franklili3/CryptoClaw.git
-cd CryptoClaw
+git clone https://github.com/franklili3/CryptoQClaw.git
+cd CryptoQClaw
 ```
 
 #### 步骤 3：运行安装程序
@@ -135,8 +135,8 @@ chmod +x scripts/install.sh
 
 ```bash
 # 克隆仓库
-git clone https://github.com/franklili3/CryptoClaw.git
-cd CryptoClaw
+git clone https://github.com/franklili3/CryptoQClaw.git
+cd CryptoQClaw
 
 # 复制并编辑配置
 mkdir -p ~/.cryptoclaw/config
@@ -359,7 +359,7 @@ MIT License
 ## 📞 联系方式
 
 - X (Twitter): [@cryptoclawai](https://x.com/cryptoclawai)
-- GitHub: [franklili3/CryptoClaw](https://github.com/franklili3/CryptoClaw)
+- GitHub: [franklili3/CryptoQClaw](https://github.com/franklili3/CryptoQClaw)
 
 ---
 

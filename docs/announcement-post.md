@@ -1,10 +1,10 @@
-# CryptoClaw 公开构建公告帖
+# CryptoQClaw 公开构建公告帖
 
 ## 主帖 (Twitter/X)
 
 ---
 
-🚀 **公开构建 CryptoClaw**
+🚀 **公开构建 CryptoQClaw**
 
 你的 AI 量化交易团队，就在 Telegram 里。
 
@@ -109,7 +109,7 @@ Week 10+: 迭代优化
 
 **Follow 这个账号，见证一个产品的诞生。**
 
-#BuildInPublic #CryptoClaw #QuantTrading #AI #OpenSource
+#BuildInPublic #CryptoQClaw #QuantTrading #AI #OpenSource
 
 ---
 
@@ -123,7 +123,7 @@ Week 10+: 迭代优化
 - 月费 $99 起 ❌
 - 不管赚没赚都要付 ❌
 
-CryptoClaw：
+CryptoQClaw：
 - 完全免费 ✅
 - 有利润才付 10% ✅
 - 高水位机制 ✅
@@ -158,7 +158,7 @@ CryptoClaw：
 - 服务器被黑 → Key 泄露 → 资金归零
 - 公司跑路 → Key 失控 → 后患无穷
 
-CryptoClaw 的做法：
+CryptoQClaw 的做法：
 
 🔐 **本地优先架构**
 - API Key 只存在你的电脑
@@ -276,7 +276,7 @@ Serverless 数据库
 
 ---
 
-🚀 正在公开构建 CryptoClaw
+🚀 正在公开构建 CryptoQClaw
 
 AI 量化交易助手，用自然语言写策略，Telegram 里完成一切。
 
@@ -287,7 +287,7 @@ AI 量化交易助手，用自然语言写策略，Telegram 里完成一切。
 
 Follow 见证一个产品的诞生 🛠️
 
-#BuildInPublic #CryptoClaw
+#BuildInPublic #CryptoQClaw
 
 ---
 
@@ -295,7 +295,7 @@ Follow 见证一个产品的诞生 🛠️
 
 ---
 
-🚀 **公开构建 CryptoClaw**
+🚀 **公开构建 CryptoQClaw**
 
 你的 AI 量化交易团队，就在 Telegram 里。
 

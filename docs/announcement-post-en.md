@@ -1,10 +1,10 @@
-# CryptoClaw Build In Public - X.com Posts
+# CryptoQClaw Build In Public - X.com Posts
 
 ## 主帖 (280字符以内)
 
 ---
 
-1/8 🚀 Building CryptoClaw in Public
+1/8 🚀 Building CryptoQClaw in Public
 
 Your AI quant trading team in Telegram.
 
@@ -18,7 +18,7 @@ All via chat, zero code needed.
 GitHub: github.com/franklili3/cryptoclaw
 X: @cryptoclaw88
 
-#BuildInPublic #CryptoClaw #AI #QuantTrading
+#BuildInPublic #CryptoQClaw #AI #QuantTrading
 
 ---
 
@@ -52,14 +52,14 @@ Done. Zero code.
 
 Traditional tools: $99+/month whether you win or lose ❌
 
-CryptoClaw:
+CryptoQClaw:
 - Free ✅
 - 10% only when you profit ✅
 - High watermark = no fee on recovery ✅
 
 You don't profit, I don't charge.
 
-#BuildInPublic #CryptoClaw
+#BuildInPublic #CryptoQClaw
 
 ---
 
@@ -72,7 +72,7 @@ You don't profit, I don't charge.
 Upload to server?
 - Hacked → Keys leaked → Funds gone ❌
 
-CryptoClaw:
+CryptoQClaw:
 - Keys stored locally only ✅
 - AES-256 encrypted ✅
 - Never uploaded ✅
@@ -137,7 +137,7 @@ NOT for you if:
 
 ⚠️ Not investment advice. DYOR.
 
-#BuildInPublic #CryptoClaw
+#BuildInPublic #CryptoQClaw
 
 ---
 
@@ -163,7 +163,7 @@ Let's build something cool together 🚀
 
 ---
 
-🚀 Building CryptoClaw
+🚀 Building CryptoQClaw
 
 AI quant trading in Telegram. Chat to trade, zero code.
 
@@ -172,7 +172,7 @@ AI quant trading in Telegram. Chat to trade, zero code.
 ✅ Local data storage
 
 Follow the journey 👇
-#BuildInPublic #CryptoClaw
+#BuildInPublic #CryptoQClaw
 
 ---
 
@@ -180,7 +180,7 @@ Follow the journey 👇
 
 ---
 
-🚀 公开构建 CryptoClaw
+🚀 公开构建 CryptoQClaw
 
 你的 AI 量化团队，就在 Telegram 里。
 

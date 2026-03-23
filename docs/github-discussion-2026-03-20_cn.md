@@ -4,7 +4,7 @@
 
 ### 1. Electron 桌面客户端开发
 
-完成了 CryptoClaw 桌面客户端的核心功能：
+完成了 CryptoQClaw 桌面客户端的核心功能：
 
 - **欢迎向导** - 3步配置流程（欢迎 → LLM配置 → Gateway配置）
 - **主界面** - Gateway 管理、API Keys 管理、服务状态显示
@@ -18,13 +18,13 @@
 
 ```bash
 # 用户只需一条命令
-curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoQClaw/main/scripts/install.sh | bash
 ```
 
 **功能包括：**
 - ✅ 自动检测操作系统（macOS/Linux）
 - ✅ 自动检测和安装 Docker
-- ✅ 拉取 CryptoClaw Docker 镜像
+- ✅ 拉取 CryptoQClaw Docker 镜像
 - ✅ 下载桌面客户端（.dmg/.AppImage）
 - ✅ 创建启动脚本和桌面快捷方式
 
@@ -88,5 +88,5 @@ function isConfigured() {
 ---
 
 *开发日志：#BuildInPublic 第 3 天*
-*仓库：github.com/franklili3/CryptoClaw*
+*仓库：github.com/franklili3/CryptoQClaw*
 *关注：@cryptoclaw88*

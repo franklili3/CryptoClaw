@@ -7,7 +7,7 @@
 ```
 Day 1 of #BuildInPublic! 🎉
 
-✅ Renamed to CryptoClaw
+✅ Renamed to CryptoQClaw
 ✅ PRD v6.0 done
 
 Core bets:
@@ -17,7 +17,7 @@ Core bets:
 • ~$20/mo vs $99+ competitors
 
 👇
-github.com/franklili3/CryptoClaw/discussions/1
+github.com/franklili3/CryptoQClaw/discussions/1
 ```
 
 ---
@@ -27,7 +27,7 @@ github.com/franklili3/CryptoClaw/discussions/1
 ```
 #BuildInPublic Day 1 完成！🎉
 
-✅ 重命名为 CryptoClaw
+✅ 重命名为 CryptoQClaw
 ✅ PRD v6.0 完成（对话优先架构）
 ✅ 英文文档完成
 ✅ GitHub 仓库就绪
@@ -40,17 +40,17 @@ github.com/franklili3/CryptoClaw/discussions/1
 4️⃣ 极简云端：~$20/月 vs 竞品 $99+
 
 查看完整总结 👇
-https://github.com/franklili3/CryptoClaw/discussions/1
+https://github.com/franklili3/CryptoQClaw/discussions/1
 
 Star ⭐ 仓库！
 github.com/franklili3/cryptoclaw
 
-#BuildInPublic #CryptoClaw #量化交易
+#BuildInPublic #CryptoQClaw #量化交易
 ```
 
 ---
 
 ## 链接
 - 仓库: https://github.com/franklili3/cryptoclaw
-- 讨论帖: https://github.com/franklili3/CryptoClaw/discussions/1
+- 讨论帖: https://github.com/franklili3/CryptoQClaw/discussions/1
 - X 账号: @cryptoclaw88

@@ -82,8 +82,8 @@ cd client && npm run build:mac
 ```
 
 #### Build Artifacts
-- `CryptoClaw-1.0.0-arm64.dmg` (92 MB) - Apple Silicon
-- `CryptoClaw-1.0.0-arm64-mac.zip` - Backup format
+- `CryptoQClaw-1.0.0-arm64.dmg` (92 MB) - Apple Silicon
+- `CryptoQClaw-1.0.0-arm64-mac.zip` - Backup format
 
 ---
 

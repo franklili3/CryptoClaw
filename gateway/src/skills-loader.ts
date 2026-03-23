@@ -1,5 +1,5 @@
 /**
- * CryptoClaw Gateway - Skills Loader
+ * CryptoQClaw Gateway - Skills Loader
  *
  * 动态加载所有 skills 并注册到 OpenClaw
  */

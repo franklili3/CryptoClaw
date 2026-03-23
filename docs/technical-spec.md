@@ -1,4 +1,4 @@
-# CryptoClaw - 技术规范文档
+# CryptoQClaw - 技术规范文档
 
 > 本文档从产品需求文档 (requirement.md) 中提取的所有代码块，按类别组织
 
@@ -1378,7 +1378,7 @@ const response: UpdateCheckResponse = {
 └─────────────────────────────────────────────────────────────────┘
                               ↕
 ┌─────────────────────────────────────────────────────────────────┐
-│                    CryptoClaw 云服务                         │
+│                    CryptoQClaw 云服务                         │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
 │  │ 收费规则存档│  │ 账单确认   │  │ 支付监控   │               │
 │  └─────────────┘  └─────────────┘  └─────────────┘              │
@@ -1561,7 +1561,7 @@ jobs:
 
 **来源**: design.md Section 6.2.1
 
-**描述**: CryptoClaw Docker 镜像构建文件。
+**描述**: CryptoQClaw Docker 镜像构建文件。
 
 ```dockerfile
 # Dockerfile
@@ -1598,11 +1598,11 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 ```bash
 #!/bin/bash
-# install.sh - CryptoClaw 一键安装脚本
+# install.sh - CryptoQClaw 一键安装脚本
 
 set -e
 
-echo "🚀 CryptoClaw 安装程序"
+echo "🚀 CryptoQClaw 安装程序"
 echo "========================"
 
 # 检查 Docker
@@ -1625,7 +1625,7 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # 拉取镜像
-echo "📦 正在下载 CryptoClaw 镜像..."
+echo "📦 正在下载 CryptoQClaw 镜像..."
 docker pull cryptoclaw/cryptoclaw:latest
 
 # 创建目录结构
@@ -1635,7 +1635,7 @@ mkdir -p ~/.cryptoclaw/{user_data,workspace,logs,config}
 # 下载配置模板
 if [ ! -f ~/.cryptoclaw/user_data/config.json ]; then
     echo "⚙️  下载配置模板..."
-    curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoClaw/main/templates/config.json \
+    curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoQClaw/main/templates/config.json \
         -o ~/.cryptoclaw/user_data/config.json
 fi
 
@@ -1644,7 +1644,7 @@ cat > ~/.cryptoclaw/start.sh << 'EOF'
 #!/bin/bash
 cd ~/.cryptoclaw
 docker-compose up -d
-echo "✅ CryptoClaw 已启动"
+echo "✅ CryptoQClaw 已启动"
 echo "📱 访问 Telegram 搜索您的 Bot 开始使用"
 EOF
 chmod +x ~/.cryptoclaw/start.sh
@@ -1654,7 +1654,7 @@ cat > ~/.cryptoclaw/stop.sh << 'EOF'
 #!/bin/bash
 cd ~/.cryptoclaw
 docker-compose down
-echo "🛑 CryptoClaw 已停止"
+echo "🛑 CryptoQClaw 已停止"
 EOF
 chmod +x ~/.cryptoclaw/stop.sh
 
@@ -1674,7 +1674,7 @@ echo ""
 
 ```powershell
 # install.ps1
-Write-Host "🚀 CryptoClaw 安装程序" -ForegroundColor Green
+Write-Host "🚀 CryptoQClaw 安装程序" -ForegroundColor Green
 
 # 检查 Docker
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
@@ -1684,7 +1684,7 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
 }
 
 # 拉取镜像
-Write-Host "📦 正在下载 CryptoClaw 镜像..." -ForegroundColor Cyan
+Write-Host "📦 正在下载 CryptoQClaw 镜像..." -ForegroundColor Cyan
 docker pull cryptoclaw/cryptoclaw:latest
 
 # 创建目录
@@ -1695,7 +1695,7 @@ New-Item -ItemType Directory -Force -Path "$cryptoclawDir\logs"
 New-Item -ItemType Directory -Force -Path "$cryptoclawDir\config"
 
 # 下载配置模板
-$configUrl = "https://raw.githubusercontent.com/franklili3/CryptoClaw/main/templates/config.json"
+$configUrl = "https://raw.githubusercontent.com/franklili3/CryptoQClaw/main/templates/config.json"
 Invoke-WebRequest -Uri $configUrl -OutFile "$cryptoclawDir\user_data\config.json"
 
 Write-Host "✅ 安装完成！" -ForegroundColor Green
@@ -1810,7 +1810,7 @@ BINANCE_API_SECRET=xxx
 
 CONFIG_DIR=~/.cryptoclaw/config
 
-echo "🔧 CryptoClaw 配置向导"
+echo "🔧 CryptoQClaw 配置向导"
 echo "========================"
 echo ""
 
@@ -1875,7 +1875,7 @@ esac
 
 # 写入 .env 文件
 cat > "$CONFIG_DIR/.env" << EOF
-# CryptoClaw 环境变量配置
+# CryptoQClaw 环境变量配置
 # 生成时间: $(date)
 
 # Telegram Bot Token
@@ -1940,7 +1940,7 @@ import * as dotenv from 'dotenv';
 import * as yaml from 'yaml';
 import { execSync } from 'child_process';
 
-interface CryptoClawConfig {
+interface CryptoQClawConfig {
   env: Record<string, string>;
   openclaw: any;
 }
@@ -1953,7 +1953,7 @@ class ConfigManager {
   }
   
   // 读取配置
-  async loadConfig(): Promise<CryptoClawConfig> {
+  async loadConfig(): Promise<CryptoQClawConfig> {
     const envPath = path.join(this.configDir, '.env');
     const yamlPath = path.join(this.configDir, 'openclaw.yaml');
     
@@ -1967,7 +1967,7 @@ class ConfigManager {
   }
   
   // 保存配置
-  async saveConfig(config: Partial<CryptoClawConfig>): Promise<void> {
+  async saveConfig(config: Partial<CryptoQClawConfig>): Promise<void> {
     // 写入 .env
     if (config.env) {
       const envContent = Object.entries(config.env)
@@ -2030,7 +2030,7 @@ async function verifyOpenAIKey(apiKey: string): Promise<boolean> {
 
 ```bash
 #!/bin/bash
-# update.sh - CryptoClaw 更新脚本
+# update.sh - CryptoQClaw 更新脚本
 
 echo "🔄 检查更新..."
 
@@ -2108,8 +2108,8 @@ echo "✅ 已回滚到版本 $VERSION"
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/franklili3/CryptoClaw.git
-cd CryptoClaw
+git clone https://github.com/franklili3/CryptoQClaw.git
+cd CryptoQClaw
 
 # 2. 安装依赖
 pip install freqtrade
@@ -2158,5 +2158,5 @@ curl http://localhost:8080/health
 
 ---
 
-*本文档由 CryptoClaw 团队维护*
+*本文档由 CryptoQClaw 团队维护*
 *最后更新: 2026-03-18*

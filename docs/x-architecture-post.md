@@ -1,4 +1,4 @@
-# X Post: Architecture Decisions Behind CryptoClaw
+# X Post: Architecture Decisions Behind CryptoQClaw
 
 ## English Version (280 char limit)
 
@@ -6,7 +6,7 @@
 
 Chat-first. Local-first. Pay only on profit.
 
-That's the philosophy behind CryptoClaw.
+That's the philosophy behind CryptoQClaw.
 
 Why? Because crypto users deserve:
 • AI trading via Telegram (no app switching)
@@ -15,7 +15,7 @@ Why? Because crypto users deserve:
 
 Your keys. Your data. Your profit.
 
-🚀 see more: https://github.com/franklili3/CryptoClaw/discussions/4
+🚀 see more: https://github.com/franklili3/CryptoQClaw/discussions/4
 
 ### Option 2: Problem-Solution Focus (275 chars)
 
@@ -39,7 +39,7 @@ Local-first = trust-first.
 
 Most trading bots: $99/mo + they hold your keys
 
-CryptoClaw:
+CryptoQClaw:
 • Free to use
 • 10% fee only on profit
 • Your keys NEVER leave your device

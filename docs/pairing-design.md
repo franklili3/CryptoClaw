@@ -1,4 +1,4 @@
-# CryptoClaw 客户端配对方案设计
+# CryptoQClaw 客户端配对方案设计
 
 ## 目标
 

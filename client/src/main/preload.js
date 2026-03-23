@@ -1,5 +1,5 @@
 /**
- * CryptoClaw Desktop Client - Preload Script
+ * CryptoQClaw Desktop Client - Preload Script
  * 
  * 安全桥接渲染进程和主进程
  */

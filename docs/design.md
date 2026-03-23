@@ -1,4 +1,4 @@
-# CryptoClaw - 设计文档
+# CryptoQClaw - 设计文档
 
 > 基于 OpenClaw + Freqtrade 的 AI 量化交易系统
 
@@ -12,7 +12,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CryptoClaw 系统                                 │
+│                              CryptoQClaw 系统                                 │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
@@ -75,7 +75,7 @@ OpenClaw 的核心体系结构是 **Soul → Agent → Skill → Tool → Script
 │  Layer 1: SOUL (灵魂)                                                       │
 │  ├─ SOUL.md - 定义 Agent 的人格、边界、语调                                 │
 │  ├─ "我是谁？我为什么存在？"                                                 │
-│  └─ CryptoClaw: "我是你的 AI 量化交易助手"                                  │
+│  └─ CryptoQClaw: "我是你的 AI 量化交易助手"                                  │
 │                                                                             │
 │  Layer 2: AGENT (代理)                                                      │
 │  ├─ AGENTS.md - 运行时行为规范、内存、规则                                  │
@@ -89,7 +89,7 @@ OpenClaw 的核心体系结构是 **Soul → Agent → Skill → Tool → Script
 │  │   ├─ Bundled (内置): /usr/lib/node_modules/openclaw/skills/             │
 │  │   ├─ Managed: ~/.openclaw/skills/                                        │
 │  │   └─ Workspace: <workspace>/skills/                                      │
-│  └─ CryptoClaw 技能:                                                        │
+│  └─ CryptoQClaw 技能:                                                        │
 │      ├─ freqtrade - Freqtrade 集成                                         │
 │      ├─ billing - 计费系统                                                  │
 │      └─ trading-signals - 交易信号                                          │
@@ -138,7 +138,7 @@ OpenClaw 的核心体系结构是 **Soul → Agent → Skill → Tool → Script
     list: [
       {
         id: "cryptoclaw",
-        name: "CryptoClaw",
+        name: "CryptoQClaw",
         workspace: "~/.cryptoclaw/workspace",
         model: "anthropic/claude-sonnet-4-5",
         default: true,
@@ -179,7 +179,7 @@ OpenClaw 的核心体系结构是 **Soul → Agent → Skill → Tool → Script
 **目录结构（基于 Freqtrade user_data 标准）：**
 
 ```
-~/.cryptoclaw/                    # CryptoClaw 根目录
+~/.cryptoclaw/                    # CryptoQClaw 根目录
 ├── user_data/                    # Freqtrade 标准 user_data 目录
 │   ├── config.json               # Freqtrade 主配置文件
 │   ├── config-private.json       # 交易所 API 密钥配置（加密，不上传）
@@ -213,7 +213,7 @@ OpenClaw 的核心体系结构是 **Soul → Agent → Skill → Tool → Script
 ├── tradesv3.sqlite               # Freqtrade 交易数据库（实盘）
 ├── tradesv3.dryrun.sqlite        # Freqtrade 交易数据库（模拟）
 │
-├── cryptoclaw.db                 # CryptoClaw 本地数据库
+├── cryptoclaw.db                 # CryptoQClaw 本地数据库
 │                                 # - 用户信息、高水位记录、账单等
 │
 ├── workspace/                    # OpenClaw Agent 工作区
@@ -234,7 +234,7 @@ OpenClaw 的核心体系结构是 **Soul → Agent → Skill → Tool → Script
 │
 └── logs/                         # 日志目录
     ├── freqtrade.log             # Freqtrade 日志
-    └── cryptoclaw.log            # CryptoClaw 日志
+    └── cryptoclaw.log            # CryptoQClaw 日志
 ```
 
 **目录说明：**
@@ -248,7 +248,7 @@ OpenClaw 的核心体系结构是 **Soul → Agent → Skill → Tool → Script
 | `user_data/data/` | 历史数据目录，按交易所和时间框架存储 |
 | `tradesv3.sqlite` | Freqtrade 实盘交易数据库 |
 | `tradesv3.dryrun.sqlite` | Freqtrade 模拟交易数据库 |
-| `cryptoclaw.db` | CryptoClaw 业务数据库（高水位、账单、支付） |
+| `cryptoclaw.db` | CryptoQClaw 业务数据库（高水位、账单、支付） |
 | `workspace/` | OpenClaw Agent 运行时目录 |
 
 ### 2.3 Skills (技能) 设计
@@ -637,9 +637,9 @@ Level 2: Communication Keys (通信密钥)
 
 | 平台 | 安装包 | 说明 |
 |------|--------|------|
-| **macOS** | CryptoClaw.dmg / .app | 拖拽安装到 Applications |
-| **Windows** | CryptoClaw-Setup.exe | 安装向导 |
-| **Linux** | CryptoClaw.AppImage / .deb / .rpm | 便携版 / 包管理器 |
+| **macOS** | CryptoQClaw.dmg / .app | 拖拽安装到 Applications |
+| **Windows** | CryptoQClaw-Setup.exe | 安装向导 |
+| **Linux** | CryptoQClaw.AppImage / .deb / .rpm | 便携版 / 包管理器 |
 
 **2. 桌面客户端首次启动流程：**（7 步向导）
 
@@ -750,7 +750,7 @@ Docker Hub: cryptoclaw/cryptoclaw
 #### 6.5.2 GitHub Release
 
 ```
-https://github.com/franklili3/CryptoClaw/releases
+https://github.com/franklili3/CryptoQClaw/releases
 ├── Source code (zip)
 ├── Source code (tar.gz)
 ├── install.sh      # Linux/macOS 安装脚本
@@ -780,7 +780,7 @@ https://github.com/franklili3/CryptoClaw/releases
 │     ~/.cryptoclaw/start.sh                                  │
 │                                                             │
 │  5. Telegram 绑定                                           │
-│     搜索 @CryptoClawBot                                     │
+│     搜索 @CryptoQClawBot                                     │
 │     发送 /start 绑定账户                                    │
 │                                                             │
 │  6. 配置 API Key（通过桌面客户端）                          │
@@ -841,4 +841,4 @@ https://github.com/franklili3/CryptoClaw/releases
 
 **文档版本:** v1.1  
 **最后更新:** 2026-03-18  
-**作者:** CryptoClaw Team
+**作者:** CryptoQClaw Team

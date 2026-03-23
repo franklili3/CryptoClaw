@@ -1,4 +1,4 @@
-# CryptoClaw - Technical Specification
+# CryptoQClaw - Technical Specification
 
 > This document contains all code blocks extracted from the Product Requirements Document (requirement.md), organized by category
 
@@ -1379,7 +1379,7 @@ const response: UpdateCheckResponse = {
 └─────────────────────────────────────────────────────────────────┘
                               ↕
 ┌─────────────────────────────────────────────────────────────────┐
-│                    CryptoClaw Cloud Services                    │
+│                    CryptoQClaw Cloud Services                    │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
 │  │Fee Agreement│  │Bill Confirm │  │Pay Monitor  │              │
 │  │   Archive   │  │             │  │             │              │
@@ -1553,7 +1553,7 @@ jobs:
 
 **Source**: design_en.md Section 6.2.1
 
-**Description**: CryptoClaw Docker image build file.
+**Description**: CryptoQClaw Docker image build file.
 
 ```dockerfile
 # Dockerfile
@@ -1590,11 +1590,11 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 ```bash
 #!/bin/bash
-# install.sh - CryptoClaw one-click installer
+# install.sh - CryptoQClaw one-click installer
 
 set -e
 
-echo "🚀 CryptoClaw Installer"
+echo "🚀 CryptoQClaw Installer"
 echo "========================"
 
 # Check Docker
@@ -1617,7 +1617,7 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Pull image
-echo "📦 Downloading CryptoClaw image..."
+echo "📦 Downloading CryptoQClaw image..."
 docker pull cryptoclaw/cryptoclaw:latest
 
 # Create directory structure
@@ -1627,7 +1627,7 @@ mkdir -p ~/.cryptoclaw/{user_data,workspace,logs,config}
 # Download config template
 if [ ! -f ~/.cryptoclaw/user_data/config.json ]; then
     echo "⚙️  Downloading config template..."
-    curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoClaw/main/templates/config.json \
+    curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoQClaw/main/templates/config.json \
         -o ~/.cryptoclaw/user_data/config.json
 fi
 
@@ -1636,7 +1636,7 @@ cat > ~/.cryptoclaw/start.sh << 'EOF'
 #!/bin/bash
 cd ~/.cryptoclaw
 docker-compose up -d
-echo "✅ CryptoClaw started"
+echo "✅ CryptoQClaw started"
 echo "📱 Visit Telegram and search your bot to get started"
 EOF
 chmod +x ~/.cryptoclaw/start.sh
@@ -1646,7 +1646,7 @@ cat > ~/.cryptoclaw/stop.sh << 'EOF'
 #!/bin/bash
 cd ~/.cryptoclaw
 docker-compose down
-echo "🛑 CryptoClaw stopped"
+echo "🛑 CryptoQClaw stopped"
 EOF
 chmod +x ~/.cryptoclaw/stop.sh
 
@@ -1666,7 +1666,7 @@ echo ""
 
 ```powershell
 # install.ps1
-Write-Host "🚀 CryptoClaw Installer" -ForegroundColor Green
+Write-Host "🚀 CryptoQClaw Installer" -ForegroundColor Green
 
 # Check Docker
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
@@ -1676,7 +1676,7 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
 }
 
 # Pull image
-Write-Host "📦 Downloading CryptoClaw image..." -ForegroundColor Cyan
+Write-Host "📦 Downloading CryptoQClaw image..." -ForegroundColor Cyan
 docker pull cryptoclaw/cryptoclaw:latest
 
 # Create directories
@@ -1687,7 +1687,7 @@ New-Item -ItemType Directory -Force -Path "$cryptoclawDir\logs"
 New-Item -ItemType Directory -Force -Path "$cryptoclawDir\config"
 
 # Download config template
-$configUrl = "https://raw.githubusercontent.com/franklili3/CryptoClaw/main/templates/config.json"
+$configUrl = "https://raw.githubusercontent.com/franklili3/CryptoQClaw/main/templates/config.json"
 Invoke-WebRequest -Uri $configUrl -OutFile "$cryptoclawDir\user_data\config.json"
 
 Write-Host "✅ Installation complete!" -ForegroundColor Green
@@ -1802,7 +1802,7 @@ BINANCE_API_SECRET=xxx
 
 CONFIG_DIR=~/.cryptoclaw/config
 
-echo "🔧 CryptoClaw Configuration Wizard"
+echo "🔧 CryptoQClaw Configuration Wizard"
 echo "==================================="
 echo ""
 
@@ -1867,7 +1867,7 @@ esac
 
 # Write .env file
 cat > "$CONFIG_DIR/.env" << EOF
-# CryptoClaw Environment Variables
+# CryptoQClaw Environment Variables
 # Generated: $(date)
 
 # Telegram Bot Token
@@ -1932,7 +1932,7 @@ import * as dotenv from 'dotenv';
 import * as yaml from 'yaml';
 import { execSync } from 'child_process';
 
-interface CryptoClawConfig {
+interface CryptoQClawConfig {
   env: Record<string, string>;
   openclaw: any;
 }
@@ -1945,7 +1945,7 @@ class ConfigManager {
   }
   
   // Load configuration
-  async loadConfig(): Promise<CryptoClawConfig> {
+  async loadConfig(): Promise<CryptoQClawConfig> {
     const envPath = path.join(this.configDir, '.env');
     const yamlPath = path.join(this.configDir, 'openclaw.yaml');
     
@@ -1959,7 +1959,7 @@ class ConfigManager {
   }
   
   // Save configuration
-  async saveConfig(config: Partial<CryptoClawConfig>): Promise<void> {
+  async saveConfig(config: Partial<CryptoQClawConfig>): Promise<void> {
     // Write .env
     if (config.env) {
       const envContent = Object.entries(config.env)
@@ -2022,7 +2022,7 @@ async function verifyOpenAIKey(apiKey: string): Promise<boolean> {
 
 ```bash
 #!/bin/bash
-# update.sh - CryptoClaw update script
+# update.sh - CryptoQClaw update script
 
 echo "🔄 Checking for updates..."
 
@@ -2096,5 +2096,5 @@ echo "✅ Rolled back to version $VERSION"
 
 ---
 
-*Maintained by CryptoClaw Team*
+*Maintained by CryptoQClaw Team*
 *Last Updated: 2026-03-18*

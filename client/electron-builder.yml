@@ -1,6 +1,6 @@
 appId: pro.cryptoclaw.client
-productName: CryptoClaw
-copyright: Copyright © 2026 CryptoClaw Team
+productName: CryptoQClaw
+copyright: Copyright © 2026 CryptoQClaw Team
 
 directories:
   output: dist
@@ -88,7 +88,7 @@ deb:
 publish:
   provider: github
   owner: franklili3
-  repo: CryptoClaw
+  repo: CryptoQClaw
   releaseType: release
 
 autoUpdate:

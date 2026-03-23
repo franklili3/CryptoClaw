@@ -1,4 +1,4 @@
-# CryptoClaw
+# CryptoQClaw
 
 > AI-Powered Crypto Trading Assistant - Chat-first, Local-first, Pay only on profit
 
@@ -16,7 +16,7 @@
 
 ### Supported Architectures
 
-CryptoClaw supports multiple CPU architectures:
+CryptoQClaw supports multiple CPU architectures:
 
 | Architecture | Docker Platform | Compatible Devices |
 |--------------|-----------------|-------------------|
@@ -29,12 +29,12 @@ CryptoClaw supports multiple CPU architectures:
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/franklili3/CryptoQClaw/main/scripts/install.sh | bash
 ```
 
 **Windows (PowerShell Administrator):**
 ```powershell
-irm https://raw.githubusercontent.com/franklili3/CryptoClaw/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/franklili3/CryptoQClaw/main/scripts/install.ps1 | iex
 ```
 
 The installer will:
@@ -71,8 +71,8 @@ Download and install [Docker Desktop](https://docs.docker.com/desktop/install/wi
 #### Step 2: Clone Repository
 
 ```bash
-git clone https://github.com/franklili3/CryptoClaw.git
-cd CryptoClaw
+git clone https://github.com/franklili3/CryptoQClaw.git
+cd CryptoQClaw
 ```
 
 #### Step 3: Run Installer
@@ -91,8 +91,8 @@ The installer will guide you through:
 
 ```bash
 # Clone repository
-git clone https://github.com/franklili3/CryptoClaw.git
-cd CryptoClaw
+git clone https://github.com/franklili3/CryptoQClaw.git
+cd CryptoQClaw
 
 # Copy and edit configuration
 cp ~/.cryptoclaw/config/.env.example ~/.cryptoclaw/config/.env
@@ -261,7 +261,7 @@ docker network ls
 ## 📁 Project Structure
 
 ```
-CryptoClaw/
+CryptoQClaw/
 ├── docs/                    # Documentation
 │   ├── requirement.md       # Product Requirements (CN)
 │   ├── requirement_en.md    # Product Requirements (EN)
@@ -306,4 +306,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-*Built with ❤️ by the CryptoClaw Team*
+*Built with ❤️ by the CryptoQClaw Team*
