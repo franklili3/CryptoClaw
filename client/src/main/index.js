@@ -494,6 +494,7 @@ function initIpcHandlers() {
   // 连接 Gateway
   ipcMain.handle('connect-gateway', async (event, { host, port, token }) => {
     const WebSocket = require('ws');
+    const { randomUUID } = require('crypto');
     
     return new Promise((resolve, reject) => {
       try {
@@ -501,52 +502,81 @@ function initIpcHandlers() {
         log.info(`Connecting to Gateway: ${wsUrl}`);
         
         const ws = new WebSocket(wsUrl);
+        let resolved = false;
         
         ws.on('open', () => {
-          log.info('WebSocket connected, sending auth...');
-          
-          // 发送 Gateway Token 认证
-          ws.send(JSON.stringify({
-            type: 'auth',
-            token: token
-          }));
+          log.info('WebSocket connected, waiting for challenge...');
+          // 等待服务器发送 challenge 事件
         });
         
         ws.on('message', (data) => {
           try {
             const msg = JSON.parse(data.toString());
-            log.info('Gateway message:', msg.type || msg.method);
+            log.info('Gateway message:', msg.type || msg.method || msg.id);
             
-            // 处理挑战响应
+            // 处理挑战 - OpenClaw Gateway 认证协议
             if (msg.type === 'event' && msg.event === 'connect.challenge') {
-              log.info('Received challenge, responding...');
-              // 响应挑战 - 用 token 作为签名
-              ws.send(JSON.stringify({
-                type: 'auth:response',
-                nonce: msg.payload?.nonce,
-                token: token
-              }));
+              log.info('Received challenge, sending connect request...');
+              
+              // 发送 JSON-RPC 格式的 connect 请求
+              // 注意: client.id 必须是 'openclaw-control-ui' (OpenClaw Gateway 的要求)
+              const connectRequest = {
+                type: 'req',
+                id: randomUUID(),
+                method: 'connect',
+                params: {
+                  minProtocol: 3,
+                  maxProtocol: 3,
+                  client: {
+                    id: 'openclaw-control-ui',  // 必须是这个值
+                    version: '1.0.0',
+                    platform: process.platform,
+                    mode: 'ui'
+                  },
+                  role: 'operator',
+                  scopes: ['operator.admin', 'operator.approvals', 'operator.pairing'],
+                  caps: ['tool-events'],
+                  auth: token ? { token: token } : undefined,
+                  userAgent: 'CryptoClaw/1.0.0',
+                  locale: 'zh-CN'
+                }
+              };
+              
+              ws.send(JSON.stringify(connectRequest));
               return;
             }
             
-            if (msg.type === 'auth:success' || msg.ok === true || msg.type === 'ready') {
-              gatewayConnection = ws;
-              isGatewayConnected = true;
-              
-              // 保存 Gateway Token
-              secureStore.set('gatewayToken', token);
-              secureStore.set('gatewayHost', host);
-              secureStore.set('gatewayPort', port);
-              
-              // 通知渲染器
-              mainWindow?.webContents.send('gateway-status-changed', { connected: true });
-              
-              resolve({ success: true, message: 'Connected to Gateway' });
-            } else if (msg.type === 'auth:failed' || msg.error) {
-              log.error('Auth failed:', msg.error);
-              ws.close();
-              reject(new Error(msg.error?.message || 'Authentication failed'));
+            // 处理 connect 响应
+            if (msg.type === 'res') {
+              if (msg.ok) {
+                log.info('Connect successful!');
+                gatewayConnection = ws;
+                isGatewayConnected = true;
+                if (token) secureStore.set('gatewayToken', token);
+                secureStore.set('gatewayHost', host);
+                secureStore.set('gatewayPort', port);
+                mainWindow?.webContents.send('gateway-status-changed', { connected: true });
+                if (!resolved) {
+                  resolved = true;
+                  resolve({ success: true, message: 'Connected to Gateway' });
+                }
+              } else {
+                const errorMsg = msg.error?.message || msg.error?.code || 'Authentication failed';
+                log.error('Connect failed:', errorMsg);
+                ws.close();
+                if (!resolved) {
+                  resolved = true;
+                  reject(new Error(errorMsg));
+                }
+              }
+              return;
             }
+            
+            // 处理其他事件
+            if (msg.type === 'event') {
+              log.info('Received event:', msg.event);
+            }
+            
           } catch (e) {
             log.error('Parse message error:', e);
           }
@@ -554,7 +584,10 @@ function initIpcHandlers() {
         
         ws.on('error', (err) => {
           log.error('WebSocket error:', err);
-          reject(new Error(`Connection failed: ${err.message}`));
+          if (!resolved) {
+            resolved = true;
+            reject(new Error(`Connection failed: ${err.message}`));
+          }
         });
         
         ws.on('close', () => {
@@ -564,13 +597,14 @@ function initIpcHandlers() {
           mainWindow?.webContents.send('gateway-status-changed', { connected: false });
         });
         
-        // 超时
+        // 超时 30 秒
         setTimeout(() => {
-          if (!isGatewayConnected) {
+          if (!resolved) {
+            resolved = true;
             ws.close();
             reject(new Error('Connection timeout'));
           }
-        }, 10000);
+        }, 30000);
         
       } catch (error) {
         log.error('Connect error:', error);
